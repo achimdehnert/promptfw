@@ -41,3 +41,4 @@ class RenderedPrompt:
     user: str
     estimated_tokens: int = 0
     cache_breakpoints: list[int] = field(default_factory=list)
+    few_shot_messages: list[dict[str, str]] = field(default_factory=list)

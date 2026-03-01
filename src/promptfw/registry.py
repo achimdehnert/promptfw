@@ -2,7 +2,7 @@
 Template registry with wildcard lookup, version-pinning, and optional hot-reload.
 
 New in 0.2.0:
-- Pydantic validation on YAML load (clear error messages on bad templates)
+- Strict field validation on YAML load (clear error messages on bad templates)
 - Version-pinning: stack.render("story.task@1.2.0", ctx)
 - Hot-reload: registry.enable_hot_reload() watches directory for YAML changes
 """
@@ -31,7 +31,7 @@ class TemplateRegistry:
 
     @classmethod
     def from_directory(cls, templates_dir: Path) -> "TemplateRegistry":
-        """Load all YAML templates from a directory tree with Pydantic validation."""
+        """Load all YAML templates from a directory tree with field validation."""
         registry = cls()
         registry._templates_dir = Path(templates_dir)
         try:
@@ -94,7 +94,11 @@ class TemplateRegistry:
         if not matches:
             raise TemplateNotFoundError(pattern)
 
-        matches.sort(key=lambda t: t.id.count("*"))
+        # Sort by specificity: prefer the template whose ID most closely matches
+        # the pattern. Fewer wildcard segments in the pattern = more specific match.
+        # Tiebreak: longer (more specific) IDs win.
+        wildcard_count = pattern.count("*")
+        matches.sort(key=lambda t: (-len(t.id.replace("*", "")), wildcard_count))
         return matches[0]
 
     def _iter_base(self):

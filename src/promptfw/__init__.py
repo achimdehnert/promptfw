@@ -11,7 +11,7 @@ from promptfw.schema import PromptTemplate, RenderedPrompt, TemplateLayer
 from promptfw.registry import TemplateRegistry
 from promptfw.renderer import PromptRenderer
 from promptfw.stack import PromptStack
-from promptfw.planning import get_planning_stack, PLANNING_TEMPLATES
+from promptfw.planning import PLANNING_TEMPLATES, get_planning_stack
 
 __all__ = [
     "PromptStack",

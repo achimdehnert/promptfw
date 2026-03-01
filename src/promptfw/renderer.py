@@ -76,17 +76,13 @@ class PromptRenderer:
 
         for tmpl in templates:
             if tmpl.layer == TemplateLayer.FEW_SHOT:
-                few_shot_text = self._render_few_shot(tmpl)
-                if few_shot_text.strip():
-                    user_parts.append(few_shot_text)
-                    # also collect as structured messages
-                    for ex in tmpl.few_shot_examples:
-                        user_text = ex.get("user", ex.get("input", ""))
-                        assistant_text = ex.get("assistant", ex.get("output", ""))
-                        if user_text:
-                            few_shot_messages.append({"role": "user", "content": user_text})
-                        if assistant_text:
-                            few_shot_messages.append({"role": "assistant", "content": assistant_text})
+                for ex in tmpl.few_shot_examples:
+                    user_text = ex.get("user", ex.get("input", ""))
+                    assistant_text = ex.get("assistant", ex.get("output", ""))
+                    if user_text:
+                        few_shot_messages.append({"role": "user", "content": user_text})
+                    if assistant_text:
+                        few_shot_messages.append({"role": "assistant", "content": assistant_text})
                 continue
 
             rendered = self.render_template(tmpl, context)
@@ -105,15 +101,13 @@ class PromptRenderer:
         user_prompt = "\n\n".join(user_parts)
         estimated_tokens = self._estimate_tokens(system_prompt + user_prompt)
 
-        rendered = RenderedPrompt(
+        return RenderedPrompt(
             system=system_prompt,
             user=user_prompt,
             estimated_tokens=estimated_tokens,
             cache_breakpoints=cache_breakpoints,
+            few_shot_messages=few_shot_messages,
         )
-        # attach few-shot messages for render_to_messages()
-        rendered._few_shot_messages = few_shot_messages  # type: ignore[attr-defined]
-        return rendered
 
     def render_to_messages(
         self,
@@ -138,8 +132,7 @@ class PromptRenderer:
         if rendered.system:
             messages.append({"role": "system", "content": rendered.system})
 
-        few_shot = getattr(rendered, "_few_shot_messages", [])
-        messages.extend(few_shot)
+        messages.extend(rendered.few_shot_messages)
 
         if rendered.user:
             messages.append({"role": "user", "content": rendered.user})
