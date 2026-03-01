@@ -13,6 +13,7 @@ from promptfw.renderer import PromptRenderer
 from promptfw.stack import PromptStack
 from promptfw.planning import PLANNING_TEMPLATES, get_planning_stack
 from promptfw.parsing import extract_json, extract_json_list, extract_json_strict
+from promptfw.writing import WRITING_TEMPLATES, get_writing_stack
 
 __all__ = [
     "PromptStack",
@@ -28,5 +29,7 @@ __all__ = [
     "extract_json",
     "extract_json_list",
     "extract_json_strict",
+    "get_writing_stack",
+    "WRITING_TEMPLATES",
     "__version__",
 ]

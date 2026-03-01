@@ -36,10 +36,17 @@ class PromptRenderer:
         )
 
     def render_template(self, template: PromptTemplate, context: dict[str, Any]) -> str:
-        """Render a single template with the given context variables."""
+        """Render a single template with the given context variables.
+
+        Variables declared in ``template.variables`` that are absent from ``context``
+        are pre-filled with ``None`` so that ``{% if var %}`` guards work correctly
+        without raising ``UndefinedError``.
+        """
         try:
+            merged = {v: None for v in template.variables}
+            merged.update(context)
             tmpl = self._jinja.from_string(template.template)
-            return tmpl.render(**context)
+            return tmpl.render(**merged)
         except UndefinedError as e:
             raise TemplateRenderError(template.id, str(e)) from e
         except Exception as e:

@@ -5,6 +5,10 @@
 ### Added (v0.4.0 — planned)
 - `parsing.py` — `extract_json()`, `extract_json_list()`, `extract_json_strict()` for reliable JSON extraction from LLM responses
 - `extract_json`, `extract_json_list`, `extract_json_strict` exported from top-level `promptfw` package
+- `writing.py` — built-in writing-phase templates: `writing.system.author`, `writing.system.editor`, `writing.format.roman/nonfiction/series`, `writing.task.write_chapter/write_scene/generate_outline/improve_prose/add_dialogue/summarize`
+- `get_writing_stack()` — pre-seeded `PromptStack` for all writing-phase templates
+- `get_writing_stack` and `WRITING_TEMPLATES` exported from top-level `promptfw` package
+- `PromptRenderer.render_template()` now pre-fills declared variables absent from context with `None`, so `{% if var %}` guards work without passing all optional variables
 
 ## [0.3.0] — 2026-03-01
 
