@@ -158,7 +158,7 @@ def get_lektorat_stack() -> PromptStack: ...
 
 | Feature | Priorität | Beschreibung |
 |---|---|---|
-| `DjangoTemplateRegistry` | Mittel | `from_queryset(qs)` lädt bfagent `PromptTemplate`-Objekte |
+| `DjangoTemplateRegistry` | ✅ **v0.5.0** | `django_registry.py` — `from_queryset(qs, field_map, strict)`. SYSTEM/TASK-Split automatisch. `BFAGENT_FIELD_MAP` für bfagent-Modell. `pip install promptfw[django]`. |
 | `context_scope` Sub-Layer | Mittel | `project` / `chapter` / `scene` für gestaffelten Context |
 | `image_prompt.py` | Niedrig | Bild-Prompt-Templates für `ScenePromptBuilder` in bfagent |
 | `render_with_fallback()` | Niedrig | Graceful Degradation bei fehlenden Templates |
@@ -239,3 +239,4 @@ def render_writing_task(self, task_id: str, context: dict) -> list[dict]:
 |------|--------|--------|
 | 2026-03-01 | Achim Dehnert | Initial draft — basierend auf bfagent-Codebase-Analyse |
 | 2026-03-01 | Achim Dehnert | Review-Korrekturen: `output_format`→`response_format`; LLMResponseError-Hierarchie dokumentiert; TASK-only Invariante für response_format/output_schema; Migrationsgate PromptStackService mit Fehlerverhalten |
+| 2026-03-01 | Achim Dehnert | `DjangoTemplateRegistry` als v0.5.0 implementiert markiert |
