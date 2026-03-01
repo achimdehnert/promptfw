@@ -2,6 +2,31 @@
 
 ## [Unreleased]
 
+## [0.5.0] — 2026-03-01
+
+### Added
+- `django_registry.py` — `DjangoTemplateRegistry` optional Django adapter for loading promptfw templates from Django ORM querysets (`pip install promptfw[django]`)
+  - `from_queryset(queryset, field_map, strict)` — converts ORM objects to `PromptTemplate` instances
+  - Automatic SYSTEM/TASK split: `system_prompt` → cacheable SYSTEM template, `user_prompt_template` → TASK template
+  - `BFAGENT_FIELD_MAP` — ready-to-use field map for the bfagent `PromptTemplate` model
+  - `strict=True` raises `ValueError` on first conversion error (production); `strict=False` logs warning and skips (development)
+  - Custom `field_map` support — works with any ORM model layout via string attribute names or callables
+- `DjangoTemplateRegistry` and `BFAGENT_FIELD_MAP` exported from top-level `promptfw` package
+- `promptfw[django]` optional dependency group (`django>=4.2`)
+
+### Fixed (ADR review — 11 Befunde)
+- `LLMResponseError` — new exception class for LLM response parsing failures (distinct from `TemplateRenderError` for Jinja2 rendering failures); `extract_json_strict()` now raises `LLMResponseError` instead of `TemplateRenderError`
+- `renderer.py` — `output_schema`/`response_format` propagation now restricted to **TASK-layer templates only** (was: all layers — bug)
+- `registry.py` — `from_directory(strict=False)` new parameter: `strict=True` raises `ValueError` on malformed YAML instead of silent log+skip; `response_format` validated against `VALID_RESPONSE_FORMATS` at load time
+- `schema.py` — `VALID_RESPONSE_FORMATS` constant (`{"json_object", "json_schema", "text"}`); `Literal` annotation on `response_format` in `PromptTemplate` and `RenderedPrompt`
+- `LLMResponseError`, `VALID_RESPONSE_FORMATS` exported from top-level package
+
+### Changed
+- ADR-001: title 4-Layer → 5-Layer; two ID namespaces documented; invariants + thread-safety warning
+- ADR-002: strict-mode documented; hot-reload Docker limitation; response_format validation
+- ADR-003: `output_format` → `response_format`; `LLMResponseError` hierarchy; TASK-only invariant; PromptStackService migration gate
+- `pyproject.toml` description: "4-layer" → "5-layer"
+
 ## [0.4.0] — 2026-03-01
 
 ### Added
