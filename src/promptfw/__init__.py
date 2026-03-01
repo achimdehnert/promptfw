@@ -1,10 +1,10 @@
 """
 promptfw — Prompt Template Framework
 
-4-layer Jinja2 template engine for LLM applications.
+5-layer Jinja2 template engine for LLM applications.
 """
 
-__version__ = "0.5.0"
+__version__ = "0.5.1"
 
 from promptfw.exceptions import LLMResponseError, TemplateNotFoundError, TemplateRenderError
 from promptfw.schema import (
