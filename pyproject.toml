@@ -1,6 +1,6 @@
 [project]
 name = "promptfw"
-version = "0.1.0"
+version = "0.2.0"
 description = "Prompt Template Framework — 4-layer Jinja2 template engine for LLM applications"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -28,8 +28,13 @@ dependencies = [
 tiktoken = [
     "tiktoken>=0.6",
 ]
+hotreload = [
+    "watchdog>=4.0",
+]
 all = [
     "tiktoken>=0.6",
+    "watchdog>=4.0",
+    "pyyaml>=6.0",
 ]
 dev = [
     "pytest>=8.0",

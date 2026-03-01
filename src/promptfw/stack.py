@@ -56,11 +56,37 @@ class PromptStack:
         """
         Render multiple templates (in order) into a combined RenderedPrompt.
 
-        Useful for building full 4-layer stacks:
+        Supports version-pinning::
+
             stack.render_stack(
-                ["system.base", "format.roman", "context.scene", "task.write"],
+                ["system.base@1.0.0", "format.roman", "task.write@2.1.0"],
                 context
             )
         """
         templates = [self.registry.get(p) for p in patterns]
         return self.renderer.render_stack(templates, context)
+
+    def render_to_messages(
+        self, patterns: list[str], context: dict[str, Any]
+    ) -> list[dict[str, str]]:
+        """
+        Render stack directly into OpenAI/LiteLLM messages list.
+
+        Includes few-shot examples as interleaved user/assistant messages::
+
+            messages = stack.render_to_messages(
+                ["system.base", "few_shot.examples", "task.write"],
+                context,
+            )
+            # Pass directly to aifw.completion() or litellm.completion()
+        """
+        templates = [self.registry.get(p) for p in patterns]
+        return self.renderer.render_to_messages(templates, context)
+
+    def enable_hot_reload(self) -> None:
+        """
+        Enable YAML file-system hot-reload (dev mode only).
+
+        Requires: pip install watchdog
+        """
+        self.registry.enable_hot_reload()
