@@ -4,7 +4,7 @@ promptfw — Prompt Template Framework
 4-layer Jinja2 template engine for LLM applications.
 """
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 from promptfw.exceptions import TemplateNotFoundError, TemplateRenderError
 from promptfw.schema import PromptTemplate, RenderedPrompt, TemplateLayer

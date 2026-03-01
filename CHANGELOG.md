@@ -2,18 +2,29 @@
 
 ## [Unreleased]
 
-### Added (v0.4.0 — planned)
-- `parsing.py` — `extract_json()`, `extract_json_list()`, `extract_json_strict()` for reliable JSON extraction from LLM responses
+## [0.4.0] — 2026-03-01
+
+### Added
+- `parsing.py` — `extract_json()`, `extract_json_list()`, `extract_json_strict()` for reliable JSON extraction from LLM responses (handles markdown-fenced, plain-fenced, raw JSON)
 - `extract_json`, `extract_json_list`, `extract_json_strict` exported from top-level `promptfw` package
-- `writing.py` — built-in writing-phase templates: `writing.system.author`, `writing.system.editor`, `writing.format.roman/nonfiction/series`, `writing.task.write_chapter/write_scene/generate_outline/improve_prose/add_dialogue/summarize`
+- `writing.py` — built-in writing-phase templates for long-form content production:
+  - `writing.system.author`, `writing.system.editor` (cacheable)
+  - `writing.format.roman`, `writing.format.nonfiction`, `writing.format.series` (cacheable)
+  - `writing.task.write_chapter`, `write_scene`, `generate_outline`, `improve_prose`, `add_dialogue`, `summarize`
 - `get_writing_stack()` — pre-seeded `PromptStack` for all writing-phase templates
 - `get_writing_stack` and `WRITING_TEMPLATES` exported from top-level `promptfw` package
-- `PromptRenderer.render_template()` now pre-fills declared variables absent from context with `None`, so `{% if var %}` guards work without passing all optional variables
-- `lektorat.py` — built-in lektorat (manuscript analysis) templates: `lektorat.system.analyst`, `lektorat.task.extract_characters/check_consistency/analyze_style/find_repetitions/check_timeline`
+- `lektorat.py` — built-in lektorat (manuscript analysis) templates:
+  - `lektorat.system.analyst` (cacheable)
+  - `lektorat.task.extract_characters`, `check_consistency`, `analyze_style`, `find_repetitions`, `check_timeline` (all with `response_format="json_object"`)
 - `get_lektorat_stack()` — pre-seeded `PromptStack` for all lektorat templates
 - `get_lektorat_stack` and `LEKTORAT_TEMPLATES` exported from top-level `promptfw` package
-- `PromptTemplate.output_schema` and `PromptTemplate.response_format` fields — propagated to `RenderedPrompt` by `render_stack()` (last TASK template wins)
-- `RenderedPrompt.output_schema` and `RenderedPrompt.response_format` fields for direct use with OpenAI/LiteLLM `response_format` parameter
+- `PromptTemplate.output_schema` — JSON Schema dict for OpenAI/LiteLLM `response_format=json_schema`
+- `PromptTemplate.response_format` — `"json_object"` / `"json_schema"` / `"text"` hint
+- `RenderedPrompt.output_schema` and `RenderedPrompt.response_format` — propagated from last TASK template in `render_stack()`
+- ADR documentation: `docs/adr/ADR-001` (four-layer stack), `ADR-002` (YAML vs DB registry), `ADR-003` (extension roadmap)
+
+### Fixed
+- `PromptRenderer.render_template()` now pre-fills variables declared in `template.variables` but absent from `context` with `None`, enabling `{% if var %}` guards without requiring callers to pass every optional variable
 
 ## [0.3.0] — 2026-03-01
 
