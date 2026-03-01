@@ -11,7 +11,7 @@ Usage::
 
     data = extract_json(llm_response)          # dict | None
     items = extract_json_list(llm_response)    # list (empty if not found)
-    data = extract_json_strict(llm_response)   # dict or raises TemplateRenderError
+    data = extract_json_strict(llm_response)   # dict or raises LLMResponseError
 """
 
 from __future__ import annotations
@@ -20,7 +20,7 @@ import json
 import re
 from typing import Any
 
-from promptfw.exceptions import TemplateRenderError
+from promptfw.exceptions import LLMResponseError
 
 # Ordered list of patterns tried in sequence — most specific first.
 _OBJECT_PATTERNS = [
@@ -86,18 +86,18 @@ def extract_json_list(text: str) -> list:
 
 def extract_json_strict(text: str) -> dict:
     """
-    Extract the first JSON object from an LLM response or raise ``TemplateRenderError``.
+    Extract the first JSON object from an LLM response or raise ``LLMResponseError``.
 
     Use this when a JSON response is required and absence should be treated as an error.
 
     Raises:
-        TemplateRenderError: If no valid JSON object is found in ``text``.
+        LLMResponseError: If no valid JSON object is found in ``text``.
     """
     result = extract_json(text)
     if result is None:
         preview = text[:120].replace("\n", " ") if text else "<empty>"
-        raise TemplateRenderError(
-            template_id="<llm_response>",
-            cause=f"No JSON object found in LLM response. Preview: {preview!r}",
+        raise LLMResponseError(
+            cause="No JSON object found in LLM response",
+            preview=preview,
         )
     return result

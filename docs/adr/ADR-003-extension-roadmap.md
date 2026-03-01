@@ -56,8 +56,19 @@ def extract_json_list(text: str) -> list:
     """Extract first JSON array from LLM response text."""
 
 def extract_json_strict(text: str) -> dict:
-    """Extract JSON or raise TemplateRenderError."""
+    """Extract JSON or raise LLMResponseError."""
 ```
+
+**Exception-Hierarchie (Befund #9 — Separation of Concern):**
+
+`extract_json_strict()` wirft `LLMResponseError`, **nicht** `TemplateRenderError`. Begründung:
+
+| Exception | Bedeutung | Auslöser |
+|---|---|---|
+| `TemplateRenderError` | Jinja2-Rendering fehlgeschlagen | Fehlendes Jinja2-Variable, Syntax-Fehler im Template |
+| `LLMResponseError` | LLM-Antwort nicht verwertbar | Kein JSON in Response, leere Response |
+
+Callers die `except TemplateRenderError` für Rendering-Fehler abfangen, fangen damit **nicht** versehentlich LLM-Response-Fehler. Die Trennung ist Pflicht — beide sind `PromptfwError`-Subklassen.
 
 #### 1b. `PromptTemplate.output_schema` + `response_format`
 
@@ -68,11 +79,24 @@ def extract_json_strict(text: str) -> dict:
 @dataclass
 class PromptTemplate:
     ...
-    output_schema: dict | None = None      # JSON Schema für response_format=json_schema
-    response_format: str | None = None     # "json_schema" | "json_object" | "text"
+    output_schema: dict | None = None
+    response_format: Literal["json_object", "json_schema", "text"] | None = None
 ```
 
-`render_to_messages()` gibt das Schema via `RenderedPrompt.output_schema` zurück, sodass es direkt an `litellm.completion(response_format=...)` übergeben werden kann.
+`render_stack()` propagiert `output_schema` und `response_format` auf `RenderedPrompt`, sodass sie direkt an `litellm.completion(response_format=...)` übergeben werden können.
+
+**Invariante (Befund #10):** `response_format` und `output_schema` werden **ausschließlich von TASK-Layer-Templates** propagiert. SYSTEM- und FORMAT-Templates können diese Felder definieren, sie werden aber beim Rendering ignoriert. Begründung: Der Response-Vertrag (`json_object`, `json_schema`) gehört zur Task-Definition, nicht zur Rolle oder zum Format.
+
+```python
+# renderer.py — Invariante explizit im Code:
+if tmpl.layer == TemplateLayer.TASK:          # nur TASK
+    if tmpl.output_schema is not None:
+        output_schema = tmpl.output_schema
+    if tmpl.response_format is not None:
+        response_format = tmpl.response_format
+```
+
+Gültige Werte: `VALID_RESPONSE_FORMATS = {"json_object", "json_schema", "text"}` (aus `schema.py`).
 
 ---
 
@@ -119,10 +143,10 @@ def get_writing_stack() -> PromptStack: ...
 ```python
 LEKTORAT_TEMPLATES = [
     PromptTemplate(id="lektorat.system.analyst",        layer=SYSTEM, cacheable=True, ...),
-    PromptTemplate(id="lektorat.task.extract_characters", layer=TASK, output_format="json_object", ...),
-    PromptTemplate(id="lektorat.task.check_consistency",  layer=TASK, output_format="json_object", ...),
-    PromptTemplate(id="lektorat.task.analyze_style",      layer=TASK, output_format="json_object", ...),
-    PromptTemplate(id="lektorat.task.find_repetitions",   layer=TASK, output_format="json_object", ...),
+    PromptTemplate(id="lektorat.task.extract_characters", layer=TASK, response_format="json_object", ...),
+    PromptTemplate(id="lektorat.task.check_consistency",  layer=TASK, response_format="json_object", ...),
+    PromptTemplate(id="lektorat.task.analyze_style",      layer=TASK, response_format="json_object", ...),
+    PromptTemplate(id="lektorat.task.find_repetitions",   layer=TASK, response_format="json_object", ...),
 ]
 
 def get_lektorat_stack() -> PromptStack: ...
@@ -171,6 +195,28 @@ Nach Implementierung kann bfagent:
 
 Migrations-Strategie für bfagent: **Strangler Fig** — neue Implementierungen nutzen promptfw, bestehende Inline-Prompts werden schrittweise migriert ohne Breaking Changes (bfagent ADR-080).
 
+### Migrationsgate: PromptStackService-Fehlerverhalten (Befund #11)
+
+Der `PromptStackService` (`apps/writing_hub/services/prompt_stack_service.py`) ist das Migrations-Gate zwischen bfagent-DB-Templates und promptfw. Folgende Regeln gelten **ohne Ausnahme**:
+
+1. **Kein stiller Fallback auf DB-Templates** wenn ein promptfw-Template fehlt. Ein fehlgeschlagenes `stack.get(template_id)` wirft `TemplateNotFoundError` — dieser darf nicht intern gefangen und durch ein DB-Template ersetzt werden ohne explizite Konfiguration.
+
+2. **Explizite Fehlerbehandlung:** Wenn `PromptStackService` sowohl promptfw als auch DB-Templates unterstützen soll (Übergangsphase), muss das **konfigurativ gesteuert** sein — z.B. `use_promptfw: bool`-Flag auf dem Service, nicht durch implizites Exception-Catching.
+
+3. **Verantwortlichkeit:** `PromptStackService` ist verantwortlich für die Konsistenz zwischen DB-Templates und promptfw-Built-ins. Bei Widerspruch (gleiche `id` in beiden) gewinnt promptfw-Built-in — dokumentiert im `PromptStackService`-Docstring.
+
+```python
+# apps/writing_hub/services/prompt_stack_service.py — Pflicht-Verhalten:
+def render_writing_task(self, task_id: str, context: dict) -> list[dict]:
+    try:
+        stack = get_writing_stack()
+        return stack.render_to_messages([...], context=context)
+    except TemplateNotFoundError:
+        # Explizit: kein stiller Fallback — Exception propagieren oder
+        # explizit auf DB-Template umschalten wenn use_db_fallback=True
+        raise  # oder: return self._render_from_db(task_id, context)
+```
+
 ## 4. Consequences
 
 ### 4.1 Positive
@@ -192,3 +238,4 @@ Migrations-Strategie für bfagent: **Strangler Fig** — neue Implementierungen 
 | Date | Author | Change |
 |------|--------|--------|
 | 2026-03-01 | Achim Dehnert | Initial draft — basierend auf bfagent-Codebase-Analyse |
+| 2026-03-01 | Achim Dehnert | Review-Korrekturen: `output_format`→`response_format`; LLMResponseError-Hierarchie dokumentiert; TASK-only Invariante für response_format/output_schema; Migrationsgate PromptStackService mit Fehlerverhalten |

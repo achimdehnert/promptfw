@@ -2,7 +2,7 @@
 
 import pytest
 
-from promptfw.exceptions import TemplateRenderError
+from promptfw.exceptions import LLMResponseError
 from promptfw.parsing import extract_json, extract_json_list, extract_json_strict
 
 
@@ -89,17 +89,17 @@ class TestExtractJsonStrict:
         result = extract_json_strict(text)
         assert result == {"result": "success"}
 
-    def test_should_raise_template_render_error_when_no_json(self):
-        with pytest.raises(TemplateRenderError) as exc:
+    def test_should_raise_llm_response_error_when_no_json(self):
+        with pytest.raises(LLMResponseError) as exc:
             extract_json_strict("No JSON here.")
         assert "No JSON object found" in str(exc.value)
 
     def test_should_raise_with_preview_of_response_in_error(self):
         text = "Plain text response from LLM."
-        with pytest.raises(TemplateRenderError) as exc:
+        with pytest.raises(LLMResponseError) as exc:
             extract_json_strict(text)
         assert "Plain text response" in str(exc.value)
 
     def test_should_raise_for_empty_string(self):
-        with pytest.raises(TemplateRenderError):
+        with pytest.raises(LLMResponseError):
             extract_json_strict("")

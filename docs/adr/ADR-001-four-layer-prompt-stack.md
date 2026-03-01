@@ -1,4 +1,4 @@
-# ADR-001: Four-Layer Prompt Stack Architecture
+# ADR-001: Five-Layer Prompt Stack Architecture
 
 | Metadata | Value |
 |----------|-------|
@@ -25,6 +25,8 @@ The library needs a prompt composition model that:
 ## 2. Decision
 
 **Use a 5-layer named stack rendered into a 2-part output (system + user).**
+
+> **Terminologie:** Die Bibliothek heißt im Docstring noch „4-layer stack" (historisch). Die korrekte Bezeichnung ist **5-Layer** — `SYSTEM`, `FORMAT`, `CONTEXT`, `TASK`, `FEW_SHOT`. `FEW_SHOT` ist ein eigenständiger Layer mit eigener Rendering-Logik (interleaved messages), kein Modifier.
 
 ### Layer definitions
 
@@ -61,13 +63,43 @@ The primary use case is hierarchical ID matching: `roman.*.scene_generation`. `f
 
 ### Template ID convention
 
+Zwei Namespaces koexistieren — beide sind gültig und müssen konsistent eingehalten werden:
+
+| Namespace | Schema | Beispiele | Verwendung |
+|---|---|---|---|
+| **Format-spezifisch** | `<format_type>.<layer>.<task>` | `roman.system.planning`, `academic.task.planning` | `planning.py` — Templates für einen bestimmten Content-Type |
+| **Phasen-spezifisch** | `<phase>.<layer>.<task>` | `writing.system.author`, `lektorat.task.extract_characters` | `writing.py`, `lektorat.py` — Templates einer Produktionsphase |
+
+**Entscheidungsregel:** Ist das Template für **einen bestimmten Ausgabe-Typ** (Roman, Sachbuch, …) → Format-Namespace. Ist das Template für **eine Produktionsphase** unabhängig vom Typ (Schreiben, Lektorat, …) → Phasen-Namespace. Mischung ist verboten.
+
 ```
-<format_type>.<layer>.<task_name>
-# Examples:
+# Format-Namespace (planning.py):
 roman.system.planning
 academic.task.planning
-writing.format.roman
+
+# Phasen-Namespace (writing.py, lektorat.py):
+writing.system.author
+writing.task.write_chapter
+lektorat.task.extract_characters
 ```
+
+### Invariants
+
+Die folgenden Invarianten sind im Code implizit — Verletzungen erzeugen keinen Fehler, aber falsches Verhalten:
+
+| Invariante | Konsequenz bei Verletzung |
+|---|---|
+| `TemplateRegistry.register()` überschreibt lautlos bei gleicher `id` | Letztes registriertes Template gewinnt — YAML-Ladereihenfolge ist signifikant |
+| `render_stack()` erwartet Templates in logischer Layer-Reihenfolge (SYSTEM→FORMAT→CONTEXT→TASK→FEW_SHOT) | Falsche Reihenfolge erzeugt kein Exception, aber SYSTEM-Text landet im User-Prompt |
+| `RenderedPrompt.system` kann `""` sein | Callers müssen auf leeres `system` prüfen bevor sie es an die LLM-API senden |
+| `response_format` und `output_schema` werden **nur von TASK-Layer-Templates** auf `RenderedPrompt` propagiert | SYSTEM/FORMAT-Templates mit `response_format` werden ignoriert |
+| Deklarierte `variables` die nicht im Context übergeben werden, erhalten `None` als Default | `{% if var %}` funktioniert, aber `{{ var }}` rendert `None` — explizite Übergabe bevorzugen |
+
+### Thread-Safety und Hot-Reload
+
+> **⚠ Produktionswarnung:** `TemplateRegistry.enable_hot_reload()` nutzt `watchdog` und ruft intern `self._templates.clear()` + anschließendes Neu-Laden auf. Dies ist **kein atomarer Vorgang**. Unter Gunicorn-Last (mehrere Threads/Workers) kann ein gleichzeitiger `get()`-Aufruf während des Reloads zu `KeyError` oder leerem Registry-Zustand führen.
+>
+> **Regel:** `enable_hot_reload()` ist ausschließlich für `DEBUG=True` (Development) erlaubt. In Production (`docker-compose.prod.yml`, Gunicorn) ist Hot-Reload verboten. Templates sind im Production-Image eingebacken — ein Filesystem-Watcher würde ohnehin nie triggern.
 
 ### Relationship to bfagent
 
@@ -96,3 +128,4 @@ bfagent uses promptfw via `apps/writing_hub/services/prompt_stack_service.py` (`
 | Date | Author | Change |
 |------|--------|--------|
 | 2026-03-01 | Achim Dehnert | Initial draft — retroactive documentation of v0.1.0–v0.3.0 decisions |
+| 2026-03-01 | Achim Dehnert | Review-Korrekturen: Titel 4-Layer→5-Layer; ID-Konvention (zwei Namespaces); Invarianten-Abschnitt; Thread-Safety-Warnung für hot_reload |

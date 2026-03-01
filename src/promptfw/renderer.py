@@ -106,11 +106,13 @@ class PromptRenderer:
             else:
                 user_parts.append(rendered)
 
-            # Last TASK template's output_schema / response_format wins
-            if tmpl.output_schema is not None:
-                output_schema = tmpl.output_schema
-            if tmpl.response_format is not None:
-                response_format = tmpl.response_format
+            # Only TASK-layer templates propagate output_schema / response_format.
+            # SYSTEM/FORMAT templates must not override the TASK's response contract.
+            if tmpl.layer == TemplateLayer.TASK:
+                if tmpl.output_schema is not None:
+                    output_schema = tmpl.output_schema
+                if tmpl.response_format is not None:
+                    response_format = tmpl.response_format
 
         system_prompt = "\n\n".join(system_parts)
         user_prompt = "\n\n".join(user_parts)

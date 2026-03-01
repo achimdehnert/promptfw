@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Any
 
 from promptfw.exceptions import TemplateNotFoundError
-from promptfw.schema import PromptTemplate, TemplateLayer
+from promptfw.schema import VALID_RESPONSE_FORMATS, PromptTemplate, TemplateLayer
 
 logger = logging.getLogger(__name__)
 
@@ -30,10 +30,18 @@ class TemplateRegistry:
         self._templates: dict[str, PromptTemplate] = {}
 
     @classmethod
-    def from_directory(cls, templates_dir: Path) -> "TemplateRegistry":
-        """Load all YAML templates from a directory tree with field validation."""
+    def from_directory(cls, templates_dir: Path, strict: bool = False) -> "TemplateRegistry":
+        """Load all YAML templates from a directory tree with field validation.
+
+        Args:
+            templates_dir: Root directory to search recursively for ``*.yaml`` files.
+            strict: If ``True``, raise ``ValueError`` on any malformed template instead
+                of logging a warning and continuing.  Use ``strict=True`` in production
+                to surface configuration errors immediately at startup.
+        """
         registry = cls()
         registry._templates_dir = Path(templates_dir)
+        registry._strict = strict
         try:
             import yaml
         except ImportError as e:
@@ -48,7 +56,14 @@ class TemplateRegistry:
         return registry
 
     def _load_yaml_file(self, yaml_file: Path, yaml=None) -> None:
-        """Load and validate a single YAML template file."""
+        """Load and validate a single YAML template file.
+
+        In strict mode (``self._strict=True``) any validation error raises ``ValueError``
+        immediately.  In non-strict mode (default) errors are logged and the file is
+        skipped — suitable for development hot-reload where a partially-edited file
+        must not crash the running process.
+        """
+        strict = getattr(self, "_strict", False)
         if yaml is None:
             import yaml as _yaml
             yaml = _yaml
@@ -60,15 +75,43 @@ class TemplateRegistry:
             required = {"id", "layer", "template"}
             missing = required - set(data.keys())
             if missing:
-                logger.warning(
-                    "Skipping %s — missing required fields: %s", yaml_file.name, missing
-                )
+                msg = f"Skipping {yaml_file.name} — missing required fields: {missing}"
+                if strict:
+                    raise ValueError(msg)
+                logger.warning(msg)
                 return
-            data["layer"] = TemplateLayer(data["layer"])
+            # Validate layer value before constructing PromptTemplate
+            try:
+                data["layer"] = TemplateLayer(data["layer"])
+            except ValueError:
+                msg = (
+                    f"Skipping {yaml_file.name} — invalid layer "
+                    f"{data['layer']!r}. Valid: {[l.value for l in TemplateLayer]}"
+                )
+                if strict:
+                    raise ValueError(msg) from None
+                logger.warning(msg)
+                return
+            # Validate response_format if present
+            rf = data.get("response_format")
+            if rf is not None and rf not in VALID_RESPONSE_FORMATS:
+                msg = (
+                    f"Skipping {yaml_file.name} — invalid response_format {rf!r}. "
+                    f"Valid: {VALID_RESPONSE_FORMATS}"
+                )
+                if strict:
+                    raise ValueError(msg)
+                logger.warning(msg)
+                return
             tmpl = PromptTemplate(**data)
             self.register(tmpl)
+        except (ValueError, TypeError):
+            raise
         except Exception as e:
-            logger.error("Failed to load template %s: %s", yaml_file, e)
+            msg = f"Failed to load template {yaml_file}: {e}"
+            if strict:
+                raise ValueError(msg) from e
+            logger.error(msg)
 
     def register(self, template: PromptTemplate) -> None:
         """Register a template (overwrites existing with same id)."""

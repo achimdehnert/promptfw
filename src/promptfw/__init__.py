@@ -6,8 +6,8 @@ promptfw — Prompt Template Framework
 
 __version__ = "0.4.0"
 
-from promptfw.exceptions import TemplateNotFoundError, TemplateRenderError
-from promptfw.schema import PromptTemplate, RenderedPrompt, TemplateLayer
+from promptfw.exceptions import LLMResponseError, TemplateNotFoundError, TemplateRenderError
+from promptfw.schema import VALID_RESPONSE_FORMATS, PromptTemplate, RenderedPrompt, TemplateLayer
 from promptfw.registry import TemplateRegistry
 from promptfw.renderer import PromptRenderer
 from promptfw.stack import PromptStack
@@ -25,6 +25,8 @@ __all__ = [
     "PromptRenderer",
     "TemplateNotFoundError",
     "TemplateRenderError",
+    "LLMResponseError",
+    "VALID_RESPONSE_FORMATS",
     "get_planning_stack",
     "PLANNING_TEMPLATES",
     "extract_json",

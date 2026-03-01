@@ -4,7 +4,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any
+from typing import Any, Literal
+
+# Valid values for PromptTemplate.response_format / RenderedPrompt.response_format.
+# Aligned with OpenAI/LiteLLM response_format parameter.
+VALID_RESPONSE_FORMATS: frozenset[str] = frozenset({"json_object", "json_schema", "text"})
 
 
 class TemplateLayer(str, Enum):
@@ -32,7 +36,7 @@ class PromptTemplate:
     few_shot_examples: list[dict[str, Any]] = field(default_factory=list)
     metadata: dict[str, Any] = field(default_factory=dict)
     output_schema: dict[str, Any] | None = None
-    response_format: str | None = None
+    response_format: Literal["json_object", "json_schema", "text"] | None = None
 
 
 @dataclass
@@ -45,4 +49,4 @@ class RenderedPrompt:
     cache_breakpoints: list[int] = field(default_factory=list)
     few_shot_messages: list[dict[str, str]] = field(default_factory=list)
     output_schema: dict[str, Any] | None = None
-    response_format: str | None = None
+    response_format: Literal["json_object", "json_schema", "text"] | None = None
