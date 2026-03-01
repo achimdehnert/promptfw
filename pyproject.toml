@@ -1,6 +1,6 @@
 [project]
 name = "promptfw"
-version = "0.2.0"
+version = "0.3.0"
 description = "Prompt Template Framework — 4-layer Jinja2 template engine for LLM applications"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -61,7 +61,7 @@ packages = ["src/promptfw"]
 
 [tool.pytest.ini_options]
 python_files = ["test_*.py"]
-pythonpath = ["."]
+pythonpath = ["src"]
 testpaths = ["tests"]
 asyncio_mode = "auto"
 
