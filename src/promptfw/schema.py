@@ -31,6 +31,8 @@ class PromptTemplate:
     task: str | None = None
     few_shot_examples: list[dict[str, Any]] = field(default_factory=list)
     metadata: dict[str, Any] = field(default_factory=dict)
+    output_schema: dict[str, Any] | None = None
+    response_format: str | None = None
 
 
 @dataclass
@@ -42,3 +44,5 @@ class RenderedPrompt:
     estimated_tokens: int = 0
     cache_breakpoints: list[int] = field(default_factory=list)
     few_shot_messages: list[dict[str, str]] = field(default_factory=list)
+    output_schema: dict[str, Any] | None = None
+    response_format: str | None = None

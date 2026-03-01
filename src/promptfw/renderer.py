@@ -80,6 +80,8 @@ class PromptRenderer:
         few_shot_messages: list[dict[str, str]] = []
         cache_breakpoints: list[int] = []
         system_char_count = 0
+        output_schema: dict[str, Any] | None = None
+        response_format: str | None = None
 
         for tmpl in templates:
             if tmpl.layer == TemplateLayer.FEW_SHOT:
@@ -104,6 +106,12 @@ class PromptRenderer:
             else:
                 user_parts.append(rendered)
 
+            # Last TASK template's output_schema / response_format wins
+            if tmpl.output_schema is not None:
+                output_schema = tmpl.output_schema
+            if tmpl.response_format is not None:
+                response_format = tmpl.response_format
+
         system_prompt = "\n\n".join(system_parts)
         user_prompt = "\n\n".join(user_parts)
         estimated_tokens = self._estimate_tokens(system_prompt + user_prompt)
@@ -114,6 +122,8 @@ class PromptRenderer:
             estimated_tokens=estimated_tokens,
             cache_breakpoints=cache_breakpoints,
             few_shot_messages=few_shot_messages,
+            output_schema=output_schema,
+            response_format=response_format,
         )
 
     def render_to_messages(

@@ -9,6 +9,11 @@
 - `get_writing_stack()` — pre-seeded `PromptStack` for all writing-phase templates
 - `get_writing_stack` and `WRITING_TEMPLATES` exported from top-level `promptfw` package
 - `PromptRenderer.render_template()` now pre-fills declared variables absent from context with `None`, so `{% if var %}` guards work without passing all optional variables
+- `lektorat.py` — built-in lektorat (manuscript analysis) templates: `lektorat.system.analyst`, `lektorat.task.extract_characters/check_consistency/analyze_style/find_repetitions/check_timeline`
+- `get_lektorat_stack()` — pre-seeded `PromptStack` for all lektorat templates
+- `get_lektorat_stack` and `LEKTORAT_TEMPLATES` exported from top-level `promptfw` package
+- `PromptTemplate.output_schema` and `PromptTemplate.response_format` fields — propagated to `RenderedPrompt` by `render_stack()` (last TASK template wins)
+- `RenderedPrompt.output_schema` and `RenderedPrompt.response_format` fields for direct use with OpenAI/LiteLLM `response_format` parameter
 
 ## [0.3.0] — 2026-03-01
 
