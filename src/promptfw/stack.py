@@ -15,6 +15,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from promptfw.exceptions import TemplateNotFoundError  # noqa: F401 re-exported
 from promptfw.registry import TemplateRegistry
 from promptfw.renderer import PromptRenderer
 from promptfw.schema import PromptTemplate, RenderedPrompt
@@ -82,6 +83,40 @@ class PromptStack:
         """
         templates = [self.registry.get(p) for p in patterns]
         return self.renderer.render_to_messages(templates, context)
+
+    def render_with_fallback(
+        self,
+        patterns: list[str],
+        context: dict[str, Any],
+    ) -> RenderedPrompt:
+        """
+        Render the first matching template from an ordered fallback list.
+
+        Tries each pattern in order; renders the first one found.
+        Useful for progressive specificity::
+
+            stack.render_with_fallback(
+                [
+                    "writing.task.write_chapter.roman",
+                    "writing.task.write_chapter",
+                    "writing.task.default",
+                ],
+                context={...},
+            )
+
+        Args:
+            patterns: Ordered list of template IDs or wildcard patterns.
+                      First match wins.
+            context:  Jinja2 render context.
+
+        Returns:
+            RenderedPrompt from the first matching template.
+
+        Raises:
+            TemplateNotFoundError: If no pattern matches any registered template.
+        """
+        template = self.registry.get_or_fallback(patterns)
+        return self.renderer.render_stack([template], context)
 
     def enable_hot_reload(self) -> None:
         """

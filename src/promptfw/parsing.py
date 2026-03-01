@@ -1,17 +1,23 @@
 """
-JSON parsing utilities for LLM responses.
+JSON and Markdown parsing utilities for LLM responses.
 
 LLM responses often contain JSON embedded in markdown code fences or as raw text.
-These utilities extract and parse JSON reliably without requiring callers to
-duplicate regex logic.
+Some LLMs respond with Markdown-structured key/value text instead of JSON.
+These utilities extract and parse both formats reliably.
 
 Usage::
 
     from promptfw.parsing import extract_json, extract_json_list, extract_json_strict
+    from promptfw.parsing import extract_field
 
     data = extract_json(llm_response)          # dict | None
     items = extract_json_list(llm_response)    # list (empty if not found)
     data = extract_json_strict(llm_response)   # dict or raises LLMResponseError
+
+    # Markdown field extraction (issue #8)
+    text = "**Premise:** Eine Geschichte.\n**Themes:** Identität, Macht"
+    extract_field(text, "Premise")             # → "Eine Geschichte."
+    extract_field(text, "Missing", default="") # → ""
 """
 
 from __future__ import annotations
@@ -21,6 +27,15 @@ import re
 from typing import Any
 
 from promptfw.exceptions import LLMResponseError
+
+# Matches **Field:**, Field:, ### Field patterns — case-insensitive.
+# Group 1: field name, Group 2: value on same line (may be empty).
+_FIELD_HEADER = re.compile(
+    r"(?:^|\n)\s*(?:\*{1,2}|#{1,3}\s*)?"
+    r"([\w][\w \-]{0,48}?)"
+    r"(?:\*{1,2})?\s*:\s*(.*)",
+    re.IGNORECASE,
+)
 
 # Ordered list of patterns tried in sequence — most specific first.
 _OBJECT_PATTERNS = [
@@ -101,3 +116,66 @@ def extract_json_strict(text: str) -> dict:
             preview=preview,
         )
     return result
+
+
+def extract_field(
+    text: str,
+    field: str,
+    default: Any = None,
+) -> Any:
+    """
+    Extract a named field from a Markdown-structured LLM response.
+
+    Handles common LLM output patterns:
+
+    - ``**Field:** value``
+    - ``Field: value``
+    - ``### Field``  (value on next line or after colon)
+
+    Matching is case-insensitive. The value runs until the next field
+    header or end of string, and is stripped of leading/trailing whitespace.
+
+    Args:
+        text:    LLM response string to search.
+        field:   Field name to look for (case-insensitive).
+        default: Returned when the field is not found. Defaults to ``None``.
+
+    Returns:
+        Extracted string value, or ``default`` if not found.
+
+    Examples::
+
+        text = "**Premise:** Eine Geschichte.\\n**Themes:** Identität, Macht"
+        extract_field(text, "Premise")            # → "Eine Geschichte."
+        extract_field(text, "Themes")             # → "Identität, Macht"
+        extract_field(text, "Missing", default="") # → ""
+    """
+    if not text or not text.strip():
+        return default
+
+    # Build a list of (start_pos, field_name, first_line_value) from all matches.
+    entries: list[tuple[int, str, str]] = []
+    for m in _FIELD_HEADER.finditer(text):
+        entries.append((m.start(), m.group(1).strip(), m.group(2).strip()))
+
+    # Find the target field (case-insensitive exact match).
+    target = field.strip().lower()
+    for idx, (pos, name, first_val) in enumerate(entries):
+        if name.lower() != target:
+            continue
+
+        # Collect value: first_val + text until next field header.
+        if idx + 1 < len(entries):
+            next_pos = entries[idx + 1][0]
+            between = text[pos:next_pos]
+        else:
+            between = text[pos:]
+
+        # Re-extract cleanly: skip the header line, take remaining lines.
+        lines = between.splitlines()
+        # First line already parsed into first_val; collect continuation lines.
+        continuation = "\n".join(lines[1:]).strip()
+        value = (first_val + ("\n" + continuation if continuation else "")).strip()
+        return value if value else default
+
+    return default

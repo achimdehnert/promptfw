@@ -86,7 +86,7 @@ class TemplateRegistry:
             except ValueError:
                 msg = (
                     f"Skipping {yaml_file.name} — invalid layer "
-                    f"{data['layer']!r}. Valid: {[l.value for l in TemplateLayer]}"
+                    f"{data['layer']!r}. Valid: {[lay.value for lay in TemplateLayer]}"
                 )
                 if strict:
                     raise ValueError(msg) from None
@@ -143,6 +143,35 @@ class TemplateRegistry:
         wildcard_count = pattern.count("*")
         matches.sort(key=lambda t: (-len(t.id.replace("*", "")), wildcard_count))
         return matches[0]
+
+    def get_or_fallback(self, patterns: list[str]) -> PromptTemplate:
+        """
+        Try each pattern in order; return the first match.
+
+        Useful for progressive fallback chains::
+
+            registry.get_or_fallback([
+                "writing.task.write_chapter.roman",
+                "writing.task.write_chapter",
+                "writing.task.default",
+            ])
+
+        Args:
+            patterns: Ordered list of template IDs or wildcard patterns.
+                      First match wins.
+
+        Returns:
+            First matching ``PromptTemplate``.
+
+        Raises:
+            TemplateNotFoundError: If none of the patterns match.
+        """
+        for pattern in patterns:
+            try:
+                return self.get(pattern)
+            except TemplateNotFoundError:
+                continue
+        raise TemplateNotFoundError(" | ".join(patterns))
 
     def _iter_base(self):
         """Iterate only over base (non-versioned) templates."""

@@ -1,9 +1,13 @@
 """
-Jinja2-based prompt renderer with 4-layer stack support.
+Jinja2-based prompt renderer with 5-layer stack support.
 
 New in 0.2.0:
 - Few-shot examples rendered from PromptTemplate.few_shot_examples
 - render_to_messages() — direct LiteLLM/OpenAI messages list output
+
+New in 0.5.0:
+- Context sub-layers: CONTEXT_PROJECT, CONTEXT_CHAPTER, CONTEXT_SCENE
+- Automatic layer ordering in render_stack (callers need not sort)
 """
 
 from __future__ import annotations
@@ -13,18 +17,19 @@ from typing import Any
 from jinja2 import BaseLoader, Environment, StrictUndefined, UndefinedError
 
 from promptfw.exceptions import TemplateRenderError
-from promptfw.schema import PromptTemplate, RenderedPrompt, TemplateLayer
+from promptfw.schema import PromptTemplate, RenderedPrompt, TemplateLayer, USER_LAYERS
 
 
 class PromptRenderer:
     """
-    Renders 4-layer prompt stacks from templates + runtime context.
+    Renders 5-layer prompt stacks from templates + runtime context.
 
     Layer order (bottom to top):
-      SYSTEM → FORMAT → CONTEXT → TASK → FEW_SHOT
+      SYSTEM → FORMAT → CONTEXT → CONTEXT_PROJECT → CONTEXT_CHAPTER
+      → CONTEXT_SCENE → TASK → FEW_SHOT
 
     SYSTEM and FORMAT layers → system prompt (stable, cacheable)
-    CONTEXT, TASK, FEW_SHOT  → user prompt (dynamic)
+    CONTEXT*, TASK, FEW_SHOT  → user prompt (dynamic)
     """
 
     def __init__(self) -> None:
@@ -72,8 +77,8 @@ class PromptRenderer:
         """
         Render a list of templates into a RenderedPrompt.
 
-        SYSTEM + FORMAT → system prompt (joined, cacheable)
-        CONTEXT + TASK + FEW_SHOT → user prompt (joined)
+        Templates are automatically sorted by canonical layer order:
+        SYSTEM/FORMAT → system prompt; CONTEXT*/TASK → user prompt; FEW_SHOT last.
         """
         system_parts: list[str] = []
         user_parts: list[str] = []
@@ -83,22 +88,37 @@ class PromptRenderer:
         output_schema: dict[str, Any] | None = None
         response_format: str | None = None
 
-        for tmpl in templates:
-            if tmpl.layer == TemplateLayer.FEW_SHOT:
+        # Sort templates by canonical layer order so callers don't have to.
+        # FEW_SHOT always appended last regardless of registration order.
+        _system_layers = (TemplateLayer.SYSTEM, TemplateLayer.FORMAT)
+        _few_shot = TemplateLayer.FEW_SHOT
+        ordered = sorted(
+            templates,
+            key=lambda t: (
+                0 if t.layer in _system_layers else
+                1 if t.layer in USER_LAYERS else
+                2  # FEW_SHOT
+            ),
+        )
+
+        for tmpl in ordered:
+            if tmpl.layer == _few_shot:
                 for ex in tmpl.few_shot_examples:
                     user_text = ex.get("user", ex.get("input", ""))
                     assistant_text = ex.get("assistant", ex.get("output", ""))
                     if user_text:
                         few_shot_messages.append({"role": "user", "content": user_text})
                     if assistant_text:
-                        few_shot_messages.append({"role": "assistant", "content": assistant_text})
+                        few_shot_messages.append(
+                            {"role": "assistant", "content": assistant_text}
+                        )
                 continue
 
             rendered = self.render_template(tmpl, context)
             if not rendered.strip():
                 continue
 
-            if tmpl.layer in (TemplateLayer.SYSTEM, TemplateLayer.FORMAT):
+            if tmpl.layer in _system_layers:
                 system_parts.append(rendered)
                 if tmpl.cacheable:
                     system_char_count += len(rendered)
