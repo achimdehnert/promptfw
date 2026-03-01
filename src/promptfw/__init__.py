@@ -12,6 +12,7 @@ from promptfw.registry import TemplateRegistry
 from promptfw.renderer import PromptRenderer
 from promptfw.stack import PromptStack
 from promptfw.planning import PLANNING_TEMPLATES, get_planning_stack
+from promptfw.parsing import extract_json, extract_json_list, extract_json_strict
 
 __all__ = [
     "PromptStack",
@@ -24,5 +25,8 @@ __all__ = [
     "TemplateRenderError",
     "get_planning_stack",
     "PLANNING_TEMPLATES",
+    "extract_json",
+    "extract_json_list",
+    "extract_json_strict",
     "__version__",
 ]

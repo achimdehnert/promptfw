@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added (v0.4.0 — planned)
+- `parsing.py` — `extract_json()`, `extract_json_list()`, `extract_json_strict()` for reliable JSON extraction from LLM responses
+- `extract_json`, `extract_json_list`, `extract_json_strict` exported from top-level `promptfw` package
+
 ## [0.3.0] — 2026-03-01
 
 ### Added
