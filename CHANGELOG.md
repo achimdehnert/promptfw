@@ -1,87 +1,66 @@
-# Changelog — promptfw
+# Changelog
 
-## [Unreleased]
+All notable changes to this project will be documented in this file.
 
-## [0.5.0] — 2026-03-01
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.5.0] - 2026-03-01
 
 ### Added
-- `django_registry.py` — `DjangoTemplateRegistry` optional Django adapter for loading promptfw templates from Django ORM querysets (`pip install promptfw[django]`)
-  - `from_queryset(queryset, field_map, strict)` — converts ORM objects to `PromptTemplate` instances
-  - Automatic SYSTEM/TASK split: `system_prompt` → cacheable SYSTEM template, `user_prompt_template` → TASK template
-  - `BFAGENT_FIELD_MAP` — ready-to-use field map for the bfagent `PromptTemplate` model
-  - `strict=True` raises `ValueError` on first conversion error (production); `strict=False` logs warning and skips (development)
-  - Custom `field_map` support — works with any ORM model layout via string attribute names or callables
-- `DjangoTemplateRegistry` and `BFAGENT_FIELD_MAP` exported from top-level `promptfw` package
-- `promptfw[django]` optional dependency group (`django>=4.2`)
 
-### Fixed (ADR review — 11 Befunde)
-- `LLMResponseError` — new exception class for LLM response parsing failures (distinct from `TemplateRenderError` for Jinja2 rendering failures); `extract_json_strict()` now raises `LLMResponseError` instead of `TemplateRenderError`
-- `renderer.py` — `output_schema`/`response_format` propagation now restricted to **TASK-layer templates only** (was: all layers — bug)
-- `registry.py` — `from_directory(strict=False)` new parameter: `strict=True` raises `ValueError` on malformed YAML instead of silent log+skip; `response_format` validated against `VALID_RESPONSE_FORMATS` at load time
-- `schema.py` — `VALID_RESPONSE_FORMATS` constant (`{"json_object", "json_schema", "text"}`); `Literal` annotation on `response_format` in `PromptTemplate` and `RenderedPrompt`
-- `LLMResponseError`, `VALID_RESPONSE_FORMATS` exported from top-level package
+- **`extract_field(text, field, default=None)`** in `promptfw.parsing` (#8)
+  - Extracts named fields from Markdown-structured LLM responses
+  - Handles `**Field:**`, `Field:`, `### Field` patterns (case-insensitive)
+  - Value runs until next field header or end of string
+
+- **`TemplateRegistry.get_or_fallback(patterns)`** (#7)
+  - Tries each pattern in order, returns first match
+  - Raises `TemplateNotFoundError` only if none match
+  - Supports wildcards and version-pinned patterns
+
+- **`PromptTemplate.tokens_estimate` auto-calculation** (#9)
+  - Auto-calculated via `tiktoken` (`cl100k_base`) in `__post_init__` when `tokens_estimate=0`
+  - Graceful fallback to `0` if `tiktoken` not installed (no breaking change)
+  - Explicit non-zero values are never overridden
+
+- **`PromptStack.render_with_fallback(patterns, context)`** (#3)
+  - Renders first matching template from an ordered fallback list
+  - Delegates to `registry.get_or_fallback()` then `renderer.render_stack()`
+  - Raises `TemplateNotFoundError` if no pattern matches
+
+- **Context scope sub-layers** (#2)
+  - `TemplateLayer.CONTEXT_PROJECT`, `CONTEXT_CHAPTER`, `CONTEXT_SCENE`
+  - `USER_LAYERS` tuple defines canonical render order:
+    `CONTEXT → CONTEXT_PROJECT → CONTEXT_CHAPTER → CONTEXT_SCENE → TASK`
+  - `PromptRenderer.render_stack()` auto-sorts templates by canonical layer order
+  - Backward-compatible: existing `CONTEXT` layer templates unchanged
+
+- **`PromptStack.for_format(format_type)`** (#6)
+  - Returns a new `PromptStack` with only format-matching templates
+  - Templates with `format_type=None` are always included (format-agnostic)
+  - Chainable with all render methods
+  - Shares renderer instance with parent stack
+
+- **`PromptStack.render_to_messages(patterns, context)`** (#5)
+  - Renders directly into OpenAI/LiteLLM `[{"role": ..., "content": ...}]` format
+  - Includes few-shot examples as interleaved `user`/`assistant` messages
+
+- **`extract_field`** and **`USER_LAYERS`** exported from `promptfw` top-level
 
 ### Changed
-- ADR-001: title 4-Layer → 5-Layer; two ID namespaces documented; invariants + thread-safety warning
-- ADR-002: strict-mode documented; hot-reload Docker limitation; response_format validation
-- ADR-003: `output_format` → `response_format`; `LLMResponseError` hierarchy; TASK-only invariant; PromptStackService migration gate
-- `pyproject.toml` description: "4-layer" → "5-layer"
 
-## [0.4.0] — 2026-03-01
+- `PromptRenderer.render_stack()` now auto-sorts templates by canonical layer order
+  (SYSTEM/FORMAT → CONTEXT* → TASK → FEW_SHOT). Callers no longer need to sort.
+- Module docstring in `parsing.py` updated to document both JSON and Markdown parsing
+- `renderer.py` docstring updated to reflect 5-layer stack
 
-### Added
-- `parsing.py` — `extract_json()`, `extract_json_list()`, `extract_json_strict()` for reliable JSON extraction from LLM responses (handles markdown-fenced, plain-fenced, raw JSON)
-- `extract_json`, `extract_json_list`, `extract_json_strict` exported from top-level `promptfw` package
-- `writing.py` — built-in writing-phase templates for long-form content production:
-  - `writing.system.author`, `writing.system.editor` (cacheable)
-  - `writing.format.roman`, `writing.format.nonfiction`, `writing.format.series` (cacheable)
-  - `writing.task.write_chapter`, `write_scene`, `generate_outline`, `improve_prose`, `add_dialogue`, `summarize`
-- `get_writing_stack()` — pre-seeded `PromptStack` for all writing-phase templates
-- `get_writing_stack` and `WRITING_TEMPLATES` exported from top-level `promptfw` package
-- `lektorat.py` — built-in lektorat (manuscript analysis) templates:
-  - `lektorat.system.analyst` (cacheable)
-  - `lektorat.task.extract_characters`, `check_consistency`, `analyze_style`, `find_repetitions`, `check_timeline` (all with `response_format="json_object"`)
-- `get_lektorat_stack()` — pre-seeded `PromptStack` for all lektorat templates
-- `get_lektorat_stack` and `LEKTORAT_TEMPLATES` exported from top-level `promptfw` package
-- `PromptTemplate.output_schema` — JSON Schema dict for OpenAI/LiteLLM `response_format=json_schema`
-- `PromptTemplate.response_format` — `"json_object"` / `"json_schema"` / `"text"` hint
-- `RenderedPrompt.output_schema` and `RenderedPrompt.response_format` — propagated from last TASK template in `render_stack()`
-- ADR documentation: `docs/adr/ADR-001` (four-layer stack), `ADR-002` (YAML vs DB registry), `ADR-003` (extension roadmap)
+### Tests
 
-### Fixed
-- `PromptRenderer.render_template()` now pre-fills variables declared in `template.variables` but absent from `context` with `None`, enabling `{% if var %}` guards without requiring callers to pass every optional variable
+- `tests/test_extract_field.py` — 10 tests for `extract_field()`
+- `tests/test_issues.py` — 17 tests for #2, #3, #7, #9
+- `tests/test_for_format.py` — 7 tests for `for_format()`
 
-## [0.3.0] — 2026-03-01
+## [0.4.x] and earlier
 
-### Added
-- `planning.py` — built-in planning-phase templates for `roman`, `nonfiction`, `academic`, `scientific`, `essay`
-- `get_planning_stack()` — pre-seeded `PromptStack` for all planning formats
-- `get_planning_stack` and `PLANNING_TEMPLATES` exported from top-level `promptfw` package
-
-### Fixed
-- `pydantic` removed from required `dependencies` (was declared but never used — ghost dependency)
-- `pyyaml` moved from `optional-dependencies[all]` to required `dependencies` (needed for `from_directory()`)
-- `few_shot_messages` is now a proper `RenderedPrompt` dataclass field instead of a dynamic `setattr`
-- Wildcard sort in `TemplateRegistry.get()` now resolves by ID length (most specific wins) instead of a no-op `*`-count on template IDs
-- Corrected `project.urls` in `pyproject.toml` to point to `achimdehnert/promptfw`
-
-## [0.2.0] — 2026-02-28
-
-### Added
-- `TemplateRegistry`: version-pinning via `template_id@version` syntax
-- `TemplateRegistry`: hot-reload via `watchdog` (`registry.enable_hot_reload()`)
-- `TemplateRegistry.from_directory()`: strict required-field validation on YAML load
-- `PromptRenderer.render_to_messages()` — renders stack directly to OpenAI/LiteLLM messages list
-- Few-shot examples rendered as interleaved `user`/`assistant` messages
-
-## [0.1.0] — 2026-02-28
-
-### Added
-- Initial release
-- `PromptTemplate` dataclass with 4 layers (SYSTEM, FORMAT, CONTEXT, TASK, FEW_SHOT)
-- `TemplateRegistry` with exact and wildcard (`fnmatch`) lookup
-- `PromptRenderer` — Jinja2 `StrictUndefined`, system/user split, token estimation
-- `PromptStack` façade — `render()`, `render_stack()`, `from_directory()`
-- `TemplateNotFoundError`, `TemplateRenderError` with informative messages
-- Optional tiktoken integration for accurate token counting
-- YAML template loading via `PromptStack.from_directory()`
+See git log for previous changes.
