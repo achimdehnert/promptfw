@@ -118,6 +118,32 @@ class PromptStack:
         template = self.registry.get_or_fallback(patterns)
         return self.renderer.render_stack([template], context)
 
+    def for_format(self, format_type: str) -> "PromptStack":
+        """
+        Return a new PromptStack containing only format-matching templates.
+
+        Includes templates where ``template.format_type == format_type``
+        **or** ``template.format_type is None`` (format-agnostic templates
+        are always included). Chainable with all render methods::
+
+            stack = get_planning_stack()
+            messages = stack.for_format("academic").render_to_messages(
+                ["planning.system", "planning.task.premise"],
+                context={...},
+            )
+
+        Args:
+            format_type: Format identifier (e.g. ``"roman"``, ``"academic"``).
+
+        Returns:
+            New ``PromptStack`` with a filtered ``TemplateRegistry``.
+        """
+        filtered = TemplateRegistry()
+        for tmpl in self.registry.list_all():
+            if tmpl.format_type is None or tmpl.format_type == format_type:
+                filtered.register(tmpl)
+        return PromptStack(registry=filtered, renderer=self.renderer)
+
     def enable_hot_reload(self) -> None:
         """
         Enable YAML file-system hot-reload (dev mode only).
