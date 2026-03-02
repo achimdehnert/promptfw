@@ -1,5 +1,5 @@
 [project]
-name = "promptfw"
+name = "iil-promptfw"
 version = "0.5.1"
 description = "Prompt Template Framework — 5-layer Jinja2 template engine for LLM applications"
 readme = "README.md"
