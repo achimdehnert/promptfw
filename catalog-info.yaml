@@ -1,0 +1,18 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: promptfw
+  description: Prompt Template Framework — 4-layer Jinja2 template engine for LLM applications
+  tags: [python, llm, templates, jinja2, framework]
+  annotations:
+    github.com/project-slug: achimdehnert/promptfw
+    pypi/package-name: "promptfw"
+    pypi/publish-workflow: "publish.yml"
+spec:
+  type: library
+  lifecycle: active
+  owner: achimdehnert
+  system: ai-platform
+  domain: platform
+  providesApis: []
+  dependsOn: []
