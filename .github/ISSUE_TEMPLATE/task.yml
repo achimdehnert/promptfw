@@ -1,0 +1,17 @@
+name: "Task"
+description: "Technische Aufgabe"
+title: "[TASK] "
+labels: ["task", "triage"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: "Beschreibung"
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: "Definition of Done"
+    validations:
+      required: true
