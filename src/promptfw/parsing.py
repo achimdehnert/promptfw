@@ -33,7 +33,7 @@ from promptfw.exceptions import LLMResponseError
 _FIELD_HEADER = re.compile(
     r"(?:^|\n)\s*(?:\*{1,2}|#{1,3}\s*)?"
     r"([\w][\w \-]{0,48}?)"
-    r"(?:\*{1,2})?\s*:\s*(.*)",
+    r"\*{0,2}:\s*(.*)",
     re.IGNORECASE,
 )
 
