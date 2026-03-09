@@ -28,12 +28,18 @@ from typing import Any
 
 from promptfw.exceptions import LLMResponseError
 
-# Matches **Field:**, Field:, ### Field patterns — case-insensitive.
-# Group 1: field name, Group 2: value on same line (may be empty).
+# Matches **Field:** value (colon before closing **), Field:, ### Field patterns.
+# Group 1: field name from **Name:** pattern
+# Group 2: field name from plain Name: or ### Name: pattern
+# Group 3: value on same line
 _FIELD_HEADER = re.compile(
-    r"(?:^|\n)\s*(?:\*{1,2}|#{1,3}\s*)?"
-    r"([\w][\w \-]{0,48}?)"
-    r"\*{0,2}:\s*(.*)",
+    r"(?:^|\n)\s*"
+    r"(?:"
+    r"\*{1,2}([\w][\w \-]{0,48}?):\*{1,2}"
+    r"|"
+    r"(?:\*{1,2}|#{1,3}\s*)?([\w][\w \-]{0,48}?)(?:\*{1,2})?\s*:"
+    r")"
+    r"\s*(.*)",
     re.IGNORECASE,
 )
 
@@ -156,7 +162,8 @@ def extract_field(
     # Build a list of (start_pos, field_name, first_line_value) from all matches.
     entries: list[tuple[int, str, str]] = []
     for m in _FIELD_HEADER.finditer(text):
-        entries.append((m.start(), m.group(1).strip(), m.group(2).strip()))
+        name = (m.group(1) or m.group(2) or "").strip()
+        entries.append((m.start(), name, m.group(3).strip()))
 
     # Find the target field (case-insensitive exact match).
     target = field.strip().lower()
