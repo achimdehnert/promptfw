@@ -5,7 +5,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.5.0] - 2026-03-01
+## [0.5.5] — 2026-03-09
+
+### Fixed
+- `extract_field()`: continuation text now sliced from `m.end()` (end of header
+  match) instead of `m.start()`, preventing the header line itself from leaking
+  into the continuation when `pos` points at a leading `\n`. Introduced
+  `_header_start()` helper for clean next-header boundary calculation.
+
+## [0.5.4] — 2026-03-09
+
+### Fixed
+- `_FIELD_HEADER` regex: alternation pattern correctly handles `**Name:**`
+  (colon inside bold markers) vs plain `Name:` / `### Name:` patterns.
+- `extract_field()`: group indexing updated to match new alternation —
+  `group(1)` = bold-colon name, `group(2)` = plain name, `group(3)` = value.
+
+## [0.5.3] — 2026-03-09
+
+### Fixed
+- `_FIELD_HEADER` regex: added explicit alternation branch for `**Name:**`
+  pattern where the colon appears before the closing `**`. Previous regex
+  failed to extract the field name correctly for this common LLM output style.
+
+## [0.5.2] — 2026-03-09
+
+### Changed
+- Internal release — version bump only; see 0.5.3 for the actual fix.
+
+## [0.5.1] — 2026-03-09
+
+### Changed
+- Internal release — version bump only.
+
+## [0.5.0] — 2026-03-01
 
 ### Added
 
