@@ -1,19 +1,19 @@
-# promptfw — Prompt Template Framework
+# iil-promptfw — Prompt Template Framework
 
 5-layer Jinja2 template engine for LLM applications.
 
-[![PyPI](https://img.shields.io/pypi/v/promptfw)](https://pypi.org/project/promptfw/)
-[![Python](https://img.shields.io/pypi/pyversions/promptfw)](https://pypi.org/project/promptfw/)
+[![PyPI](https://img.shields.io/pypi/v/iil-promptfw)](https://pypi.org/project/iil-promptfw/)
+[![Python](https://img.shields.io/pypi/pyversions/iil-promptfw)](https://pypi.org/project/iil-promptfw/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Installation
 
 ```bash
-pip install promptfw
+pip install iil-promptfw
 # With accurate token counting:
-pip install promptfw[tiktoken]
+pip install "iil-promptfw[tiktoken]"
 # All optional dependencies:
-pip install promptfw[all]
+pip install "iil-promptfw[all]"
 ```
 
 ## Quick Start
@@ -136,22 +136,34 @@ rendered = stack.render_stack(
 )
 ```
 
-## Markdown Response Parsing
+## Markdown Response Parsing (v0.5.0+)
+
+Extract named fields from LLM Markdown responses. Handles `**Field:**`,
+`Field:`, and `### Field` patterns — including the common LLM style where
+the colon appears **inside** the bold markers (`**Field:** value`).
 
 ```python
 from promptfw import extract_field, extract_json
 
-# LLMs often respond with Markdown key:value text instead of JSON
 text = "**Premise:** A blacksmith discovers magic.\n**Themes:** Identity, Power"
 extract_field(text, "Premise")              # → "A blacksmith discovers magic."
 extract_field(text, "Themes")               # → "Identity, Power"
 extract_field(text, "Missing", default="")  # → ""
+
+# Plain colon style
+text2 = "Title: The Lost City\nAuthor: Jane Doe"
+extract_field(text2, "Title")               # → "The Lost City"
+extract_field(text2, "Author")              # → "Jane Doe"
 
 # JSON extraction from fenced blocks or raw text
 data = extract_json(llm_response)           # dict | None
 items = extract_json_list(llm_response)     # list
 data = extract_json_strict(llm_response)    # dict or raises LLMResponseError
 ```
+
+> **v0.5.5**: Fixed continuation-text slicing bug where the header line itself
+> could leak into multi-field responses. All `**Field:**` and `Field:` patterns
+> now extract correctly regardless of position in the text.
 
 ## Token Estimation
 
@@ -199,7 +211,7 @@ stack.render_stack(
 ## Hot Reload (dev mode)
 
 ```bash
-pip install promptfw[hotreload]
+pip install "iil-promptfw[hotreload]"
 ```
 
 ```python
@@ -215,3 +227,7 @@ stack.enable_hot_reload()  # watches for YAML changes
 | `hotreload` | watchdog≥4.0 | File-system hot reload |
 | `django` | django≥4.2 | ORM queryset adapter |
 | `all` | all above | Everything |
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md).
