@@ -29,9 +29,9 @@ from typing import Any
 from promptfw.exceptions import LLMResponseError
 
 # Matches **Field:** value (colon before closing **), Field:, ### Field patterns.
-# Group 1: field name from **Name:** pattern
-# Group 2: field name from plain Name: or ### Name: pattern
-# Group 3: value on same line
+# Group 1: field name from **Name:** pattern (colon inside bold)
+# Group 2: field name from plain Name: or ### Name: or **Name**: patterns
+# Group 3: value on same line (may be empty for block values)
 _FIELD_HEADER = re.compile(
     r"(?:^|\n)\s*"
     r"(?:"
@@ -159,30 +159,48 @@ def extract_field(
     if not text or not text.strip():
         return default
 
-    # Build a list of (start_pos, field_name, first_line_value) from all matches.
+    # Build list of (header_end_pos, field_name, first_line_value) from all matches.
+    # header_end_pos is m.end() — points to the character AFTER the matched header line,
+    # so slicing text[header_end:next_header_start] gives only continuation lines.
     entries: list[tuple[int, str, str]] = []
     for m in _FIELD_HEADER.finditer(text):
         name = (m.group(1) or m.group(2) or "").strip()
-        entries.append((m.start(), name, m.group(3).strip()))
+        entries.append((m.end(), name, m.group(3).strip()))
 
     # Find the target field (case-insensitive exact match).
     target = field.strip().lower()
-    for idx, (pos, name, first_val) in enumerate(entries):
+    for idx, (header_end, name, first_val) in enumerate(entries):
         if name.lower() != target:
             continue
 
-        # Collect value: first_val + text until next field header.
+        # Continuation: text between end of this header and start of next header.
         if idx + 1 < len(entries):
-            next_pos = entries[idx + 1][0]
-            between = text[pos:next_pos]
+            next_header_end = entries[idx + 1][0]
+            # next header's m.start() = next_header_end minus the header length;
+            # use m.start() stored separately for clean slicing.
+            # Re-find next header start by scanning back from next_header_end.
+            continuation_text = text[header_end:_header_start(entries, idx + 1, text)]
         else:
-            between = text[pos:]
+            continuation_text = text[header_end:]
 
-        # Re-extract cleanly: skip the header line, take remaining lines.
-        lines = between.splitlines()
-        # First line already parsed into first_val; collect continuation lines.
-        continuation = "\n".join(lines[1:]).strip()
+        continuation = continuation_text.strip()
         value = (first_val + ("\n" + continuation if continuation else "")).strip()
         return value if value else default
 
     return default
+
+
+def _header_start(
+    entries: list[tuple[int, str, str]],
+    idx: int,
+    text: str,
+) -> int:
+    """Return the start position of the header at entries[idx].
+
+    Since entries store m.end(), we locate the actual start by finding
+    the last newline before the header_end position.
+    """
+    header_end = entries[idx][0]
+    # The header line starts after the preceding newline (or at 0).
+    preceding = text[:header_end].rfind("\n")
+    return preceding + 1 if preceding >= 0 else 0
