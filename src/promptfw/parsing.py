@@ -35,9 +35,9 @@ from promptfw.exceptions import LLMResponseError
 _FIELD_HEADER = re.compile(
     r"(?:^|\n)\s*"
     r"(?:"
-    r"\*{1,2}([\w][\w \-]{0,48}?):\*{1,2}"
+    r"\*{1,2}([\w][\w \-]{0,48}?):\*{1,2}"  # **Name:** pattern
     r"|"
-    r"(?:\*{1,2}|#{1,3}\s*)?([\w][\w \-]{0,48}?)(?:\*{1,2})?\s*:"
+    r"(?:\*{1,2}|#{1,3}\s*)?([\w][\w \-]{0,48}?)(?:\*{1,2})?\s*:"  # Name: or **Name**: or ### Name:
     r")"
     r"\s*(.*)",
     re.IGNORECASE,
@@ -165,7 +165,7 @@ def extract_field(
     entries: list[tuple[int, str, str]] = []
     for m in _FIELD_HEADER.finditer(text):
         name = (m.group(1) or m.group(2) or "").strip()
-        entries.append((m.end(), name, m.group(3).strip()))
+        entries.append((m.start(), name, m.group(3).strip()))
 
     # Find the target field (case-insensitive exact match).
     target = field.strip().lower()

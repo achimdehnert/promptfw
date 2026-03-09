@@ -1,6 +1,6 @@
 [project]
 name = "iil-promptfw"
-version = "0.5.5"
+version = "0.5.6"
 description = "Prompt Template Framework — 5-layer Jinja2 template engine for LLM applications"
 readme = "README.md"
 requires-python = ">=3.11"
