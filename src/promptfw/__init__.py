@@ -27,6 +27,7 @@ from promptfw.parsing import (
 )
 from promptfw.writing import WRITING_TEMPLATES, get_writing_stack
 from promptfw.lektorat import LEKTORAT_TEMPLATES, get_lektorat_stack
+from promptfw.db_resolver import DBPromptResolver
 
 __all__ = [
     "PromptStack",
@@ -52,5 +53,6 @@ __all__ = [
     "WRITING_TEMPLATES",
     "get_lektorat_stack",
     "LEKTORAT_TEMPLATES",
+    "DBPromptResolver",
     "__version__",
 ]
