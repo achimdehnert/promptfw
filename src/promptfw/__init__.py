@@ -4,7 +4,7 @@ promptfw — Prompt Template Framework
 5-layer Jinja2 template engine for LLM applications.
 """
 
-__version__ = "0.5.1"
+__version__ = "0.6.0"
 
 from promptfw.exceptions import LLMResponseError, TemplateNotFoundError, TemplateRenderError
 from promptfw.schema import (
@@ -27,6 +27,7 @@ from promptfw.parsing import (
 )
 from promptfw.writing import WRITING_TEMPLATES, get_writing_stack
 from promptfw.lektorat import LEKTORAT_TEMPLATES, get_lektorat_stack
+from promptfw.concept_analysis import CONCEPT_ANALYSIS_TEMPLATES, get_concept_analysis_stack
 from promptfw.db_resolver import DBPromptResolver
 
 __all__ = [
@@ -53,6 +54,8 @@ __all__ = [
     "WRITING_TEMPLATES",
     "get_lektorat_stack",
     "LEKTORAT_TEMPLATES",
+    "get_concept_analysis_stack",
+    "CONCEPT_ANALYSIS_TEMPLATES",
     "DBPromptResolver",
     "__version__",
 ]
