@@ -25,7 +25,12 @@ from promptfw.parsing import (
     extract_json_strict,
     extract_field,
 )
-from promptfw.writing import WRITING_TEMPLATES, get_writing_stack
+from promptfw.writing import (
+    WRITING_TEMPLATES,
+    get_writing_stack,
+    get_academic_writing_stack,
+    get_scientific_writing_stack,
+)
 from promptfw.lektorat import LEKTORAT_TEMPLATES, get_lektorat_stack
 from promptfw.concept_analysis import CONCEPT_ANALYSIS_TEMPLATES, get_concept_analysis_stack
 from promptfw.db_resolver import DBPromptResolver
@@ -51,6 +56,8 @@ __all__ = [
     "extract_json_strict",
     "extract_field",
     "get_writing_stack",
+    "get_academic_writing_stack",
+    "get_scientific_writing_stack",
     "WRITING_TEMPLATES",
     "get_lektorat_stack",
     "LEKTORAT_TEMPLATES",

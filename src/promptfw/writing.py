@@ -272,43 +272,314 @@ WRITING_TEMPLATES: list[PromptTemplate] = [
         ),
         variables=["chapter_text", "summary_length"],
     ),
+    # =========================================================================
+    # SYSTEM — Academic / Scientific
+    # =========================================================================
+    PromptTemplate(
+        id="writing.system.academic",
+        layer=TemplateLayer.SYSTEM,
+        cacheable=True,
+        format_type="academic",
+        phase="writing",
+        template=(
+            "Du bist ein erfahrener akademischer Autor und wissenschaftlicher Schreibcoach "
+            "mit Expertise in Monographien, Dissertationen und Habilitationsschriften.\n"
+            "Deine Stärken:\n"
+            "- Präzise, objektive Sprache ohne rhetorische Übertreibungen\n"
+            "- Klare Argumentationsstruktur mit These, Beleg und Schlussfolgerung\n"
+            "- Korrekte Einbettung von Zitaten und Quellennachweisen\n"
+            "- Konsistente Fachterminologie über das gesamte Werk\n"
+            "- Strukturierte Absatzführung: ein Gedanke, eine Kernaussage\n\n"
+            "Schreibe immer im akademischen Register: sachlich, präzise, nachvollziehbar. "
+            "Verzichte auf wertende Allgemeinplätze und journalistische Stilmittel."
+        ),
+        variables=[],
+    ),
+    PromptTemplate(
+        id="writing.system.scientific",
+        layer=TemplateLayer.SYSTEM,
+        cacheable=True,
+        format_type="scientific",
+        phase="writing",
+        template=(
+            "Du bist ein erfahrener Wissenschaftler und Erstautor für empirische Studien "
+            "und wissenschaftliche Paper (IMRaD-Format).\n"
+            "Deine Stärken:\n"
+            "- Strikte IMRaD-Struktur: Introduction, Methods, Results, Discussion\n"
+            "- Hypothesengeleitetes Schreiben: H1/H0 konsequent verfolgen\n"
+            "- Objektive Ergebnisdarstellung ohne vorweggenommene Interpretation\n"
+            "- Methodische Präzision: Stichprobe, Verfahren, Limitationen klar benennen\n"
+            "- Korrekte statistische Notation und Signifikanzangaben\n\n"
+            "Schreibe ausschließlich im wissenschaftlichen Register. "
+            "Trenne Ergebnisse (Results) strikt von Interpretation (Discussion)."
+        ),
+        variables=[],
+    ),
+    # =========================================================================
+    # FORMAT — Academic / Scientific
+    # =========================================================================
+    PromptTemplate(
+        id="writing.format.academic",
+        layer=TemplateLayer.FORMAT,
+        cacheable=True,
+        format_type="academic",
+        phase="writing",
+        template=(
+            "Format-Vorgaben für akademische Monographien / Dissertationen:\n"
+            "- Absätze: 4–8 Sätze, strenge Themenführung (ein Gedanke pro Absatz)\n"
+            "- Zitate: direkte Zitate in Anführungszeichen + Quellenangabe (Autor Jahr: Seite)\n"
+            "- Indirekte Zitate: paraphrasiert + Quellenangabe ohne Seitenzahl\n"
+            "- Fußnoten: nur für ergänzende Hinweise, nicht für Hauptargumente\n"
+            "- Überschriften: nummeriert (1., 1.1, 1.1.1), sachlich-deskriptiv\n"
+            "- Zeitform: Präsens für allgemeingültige Aussagen, Perfekt für Forschungsstand\n"
+            "- Keine Ich-Form (außer Vorwort), stattdessen 'Die vorliegende Arbeit zeigt...'\n"
+            "- Abkürzungen: beim ersten Vorkommen ausschreiben, dann Kürzel"
+        ),
+        variables=[],
+    ),
+    PromptTemplate(
+        id="writing.format.scientific",
+        layer=TemplateLayer.FORMAT,
+        cacheable=True,
+        format_type="scientific",
+        phase="writing",
+        template=(
+            "Format-Vorgaben für wissenschaftliche Paper (IMRaD):\n"
+            "- Introduction: Forschungsstand → Forschungslücke → Fragestellung → Hypothese\n"
+            "- Methods: Stichprobe, Design, Instrumente, Auswertungsverfahren — reproduzierbar\n"
+            "- Results: nur Befunde, keine Interpretation — Tabellen/Abbildungen referenzieren\n"
+            "- Discussion: Hypothesenprüfung, Einordnung, Limitationen, Ausblick\n"
+            "- Statistik: M (SD), t(df) = x.xx, p = .xxx, d = x.xx (APA-Notation)\n"
+            "- Zitation: nach vereinbartem Stil (APA/AMA/Vancouver etc.)\n"
+            "- Passiv oder unpersönliche Konstruktionen: 'Es wurde analysiert...'\n"
+            "- Abstract: max. 250 Wörter, strukturiert nach IMRaD-Kurzform"
+        ),
+        variables=[],
+    ),
+    # =========================================================================
+    # TASK — Academic Section Writing
+    # =========================================================================
+    PromptTemplate(
+        id="writing.task.write_academic_section",
+        layer=TemplateLayer.TASK,
+        cacheable=False,
+        format_type="academic",
+        phase="writing",
+        template=(
+            "Schreibe den folgenden Abschnitt der akademischen Arbeit:\n\n"
+            "Titel der Arbeit: {{ work_title }}\n"
+            "Abschnittstitel: {{ section_title }}\n"
+            "Abschnittsnummer: {{ section_number|default('') }}\n"
+            "{% if field_of_study %}Fachgebiet: {{ field_of_study }}\n{% endif %}"
+            "{% if research_question %}Forschungsfrage: {{ research_question }}\n{% endif %}"
+            "{% if section_outline %}Gliederung dieses Abschnitts:\n{{ section_outline }}\n{% endif %}"
+            "{% if prior_section_summary %}Vorheriger Abschnitt (Zusammenfassung):\n{{ prior_section_summary }}\n{% endif %}"
+            "{% if key_sources %}Zentrale Quellen (als Kontext, nicht direkt zitieren):\n{{ key_sources }}\n{% endif %}"
+            "{% if citation_style %}Zitationsstil: {{ citation_style }}\n{% endif %}"
+            "\nAnforderungen:\n"
+            "- Zielumfang: {{ target_words|default(600) }} Wörter\n"
+            "- Ton: akademisch, sachlich, präzise\n"
+            "{% if additional_instructions %}- {{ additional_instructions }}\n{% endif %}"
+            "\nSchreibe den vollständigen Abschnittstext. Beginne direkt mit dem Inhalt."
+        ),
+        variables=[
+            "work_title",
+            "section_title",
+            "section_number",
+            "field_of_study",
+            "research_question",
+            "section_outline",
+            "prior_section_summary",
+            "key_sources",
+            "citation_style",
+            "target_words",
+            "additional_instructions",
+        ],
+    ),
+    PromptTemplate(
+        id="writing.task.write_imrad_section",
+        layer=TemplateLayer.TASK,
+        cacheable=False,
+        format_type="scientific",
+        phase="writing",
+        template=(
+            "Schreibe den folgenden IMRaD-Abschnitt:\n\n"
+            "Paper-Titel: {{ paper_title }}\n"
+            "Abschnitt: {{ imrad_section }}\n"
+            "{% if field_of_study %}Fachgebiet: {{ field_of_study }}\n{% endif %}"
+            "{% if hypothesis %}Hypothese (H1): {{ hypothesis }}\n{% endif %}"
+            "{% if null_hypothesis %}Nullhypothese (H0): {{ null_hypothesis }}\n{% endif %}"
+            "{% if section_outline %}Inhaltliche Vorgaben:\n{{ section_outline }}\n{% endif %}"
+            "{% if methods_summary %}Methoden-Zusammenfassung (für Kontext):\n{{ methods_summary }}\n{% endif %}"
+            "{% if results_summary %}Ergebnisse (für Discussion-Kontext):\n{{ results_summary }}\n{% endif %}"
+            "{% if key_sources %}Schlüsselquellen:\n{{ key_sources }}\n{% endif %}"
+            "{% if citation_style %}Zitationsstil: {{ citation_style }}\n{% endif %}"
+            "\nAnforderungen:\n"
+            "- Zielumfang: {{ target_words|default(500) }} Wörter\n"
+            "- Strikte IMRaD-Konventionen einhalten\n"
+            "- Results und Discussion klar trennen\n"
+            "{% if additional_instructions %}- {{ additional_instructions }}\n{% endif %}"
+            "\nSchreibe den Abschnitt vollständig. Beginne direkt mit dem Inhalt."
+        ),
+        variables=[
+            "paper_title",
+            "imrad_section",
+            "field_of_study",
+            "hypothesis",
+            "null_hypothesis",
+            "section_outline",
+            "methods_summary",
+            "results_summary",
+            "key_sources",
+            "citation_style",
+            "target_words",
+            "additional_instructions",
+        ],
+    ),
+    PromptTemplate(
+        id="writing.task.write_abstract",
+        layer=TemplateLayer.TASK,
+        cacheable=False,
+        format_type="scientific",
+        phase="writing",
+        template=(
+            "Schreibe einen strukturierten Abstract für folgende wissenschaftliche Arbeit:\n\n"
+            "Titel: {{ work_title }}\n"
+            "Typ: {{ work_type|default('Paper') }}\n"
+            "{% if field_of_study %}Fachgebiet: {{ field_of_study }}\n{% endif %}"
+            "{% if research_question %}Forschungsfrage: {{ research_question }}\n{% endif %}"
+            "{% if hypothesis %}Hypothese: {{ hypothesis }}\n{% endif %}"
+            "{% if methods_summary %}Methoden: {{ methods_summary }}\n{% endif %}"
+            "{% if key_results %}Kernergebnisse: {{ key_results }}\n{% endif %}"
+            "{% if conclusion %}Schlussfolgerung: {{ conclusion }}\n{% endif %}"
+            "\nVorgaben:\n"
+            "- Maximallänge: {{ max_words|default(250) }} Wörter\n"
+            "- Struktur: Hintergrund / Ziel / Methoden / Ergebnisse / Schlussfolgerung\n"
+            "- Keine Zitate, keine Abkürzungen ohne Erklärung\n"
+            "- Unpersönliche Sprache (kein 'Ich' / 'Wir')\n"
+            "\nSchreibe den Abstract als fließenden Text."
+        ),
+        variables=[
+            "work_title",
+            "work_type",
+            "field_of_study",
+            "research_question",
+            "hypothesis",
+            "methods_summary",
+            "key_results",
+            "conclusion",
+            "max_words",
+        ],
+    ),
+    PromptTemplate(
+        id="writing.task.improve_academic_prose",
+        layer=TemplateLayer.TASK,
+        cacheable=False,
+        format_type="academic",
+        phase="writing",
+        template=(
+            "Verbessere den folgenden akademischen Text. Behalte den Inhalt und die "
+            "Argumentation — verfeinere Sprache, Präzision und wissenschaftlichen Stil.\n\n"
+            "{% if field_of_study %}Fachgebiet: {{ field_of_study }}\n{% endif %}"
+            "Fokus der Verbesserung: {{ improvement_focus|default('Klarheit, Präzision, akademischer Stil') }}\n"
+            "{% if citation_style %}Zitationsstil: {{ citation_style }}\n{% endif %}"
+            "\nOriginaltext:\n---\n{{ original_text }}\n---\n\n"
+            "Verbessere:\n"
+            "- Unpräzise oder umgangssprachliche Formulierungen → akademisches Register\n"
+            "- Redundante Aussagen → prägnante Formulierung\n"
+            "- Unklare Kausalverknüpfungen → explizite Argumentationsschritte\n"
+            "- Passiv/Aktiv nach akademischer Konvention\n\n"
+            "Gib nur den verbesserten Text zurück, keine Erklärungen."
+        ),
+        variables=["original_text", "improvement_focus", "field_of_study", "citation_style"],
+    ),
 ]
 
 
 def get_writing_stack() -> PromptStack:
-    """
-    Return a PromptStack pre-seeded with all writing-phase templates.
-
-    Each call returns a new independent stack instance.
-
-    Example::
-
-        stack = get_writing_stack()
-
-        # Render a full chapter-writing prompt
-        messages = stack.render_to_messages(
-            ["writing.system.author", "writing.format.roman", "writing.task.write_chapter"],
-            context={
-                "chapter_number": 1,
-                "chapter_title": "Der Aufbruch",
-                "chapter_outline": "Elias verlässt das Dorf.",
-                "target_words": 2500,
-                "pov_character": "Elias",
-                "mood": "hopeful",
-                "genre": "Fantasy",
-            },
-        )
-
-        # Render a prose improvement prompt
-        messages = stack.render_to_messages(
-            ["writing.system.editor", "writing.task.improve_prose"],
-            context={
-                "original_text": "Er ging schnell. Es war dunkel.",
-                "improvement_focus": "Show don't tell, Rhythmus",
-            },
-        )
-    """
+    """Return a PromptStack pre-seeded with all writing-phase templates."""
     stack = PromptStack()
     for tmpl in WRITING_TEMPLATES:
         stack.register(tmpl)
+    return stack
+
+
+def get_academic_writing_stack() -> PromptStack:
+    """
+    Return a PromptStack with academic writing templates only.
+
+    Includes: writing.system.academic, writing.format.academic,
+    writing.task.write_academic_section, writing.task.improve_academic_prose.
+
+    Example::
+
+        stack = get_academic_writing_stack()
+        messages = stack.render_to_messages(
+            [
+                "writing.system.academic",
+                "writing.format.academic",
+                "writing.task.write_academic_section",
+            ],
+            context={
+                "work_title": "KI-gestützte Diagnostik in der Medizin",
+                "section_title": "Theoretischer Hintergrund",
+                "section_number": "2.1",
+                "field_of_study": "Medizininformatik",
+                "research_question": "Wie verändern LLMs die klinische Entscheidungsfindung?",
+                "target_words": 800,
+                "citation_style": "APA",
+            },
+        )
+    """
+    academic_ids = {
+        "writing.system.academic",
+        "writing.format.academic",
+        "writing.task.write_academic_section",
+        "writing.task.improve_academic_prose",
+        "writing.task.write_abstract",
+    }
+    stack = PromptStack()
+    for tmpl in WRITING_TEMPLATES:
+        if tmpl.id in academic_ids:
+            stack.register(tmpl)
+    return stack
+
+
+def get_scientific_writing_stack() -> PromptStack:
+    """
+    Return a PromptStack with scientific (IMRaD) writing templates only.
+
+    Includes: writing.system.scientific, writing.format.scientific,
+    writing.task.write_imrad_section, writing.task.write_abstract.
+
+    Example::
+
+        stack = get_scientific_writing_stack()
+        messages = stack.render_to_messages(
+            [
+                "writing.system.scientific",
+                "writing.format.scientific",
+                "writing.task.write_imrad_section",
+            ],
+            context={
+                "paper_title": "LLM-Accuracy in Clinical Decision Support",
+                "imrad_section": "Methods",
+                "field_of_study": "Medical Informatics",
+                "hypothesis": "LLMs erzielen eine Genauigkeit > 85 % bei Diagnosestellung.",
+                "section_outline": "Stichprobe n=120, GPT-4o vs. Basisarzt-Urteil, Kappa-Koeffizient",
+                "target_words": 600,
+                "citation_style": "APA",
+            },
+        )
+    """
+    scientific_ids = {
+        "writing.system.scientific",
+        "writing.format.scientific",
+        "writing.task.write_imrad_section",
+        "writing.task.write_abstract",
+    }
+    stack = PromptStack()
+    for tmpl in WRITING_TEMPLATES:
+        if tmpl.id in scientific_ids:
+            stack.register(tmpl)
     return stack
