@@ -38,6 +38,41 @@ class PromptStack:
         registry = TemplateRegistry.from_directory(Path(templates_dir))
         return cls(registry=registry)
 
+    @classmethod
+    def from_file(cls, file_path: Path | str) -> "PromptStack":
+        """Load a single .yaml template file into a PromptStack.
+
+        For .jinja2 frontmatter templates, use::
+
+            from promptfw.frontmatter import render_frontmatter_file
+            messages = render_frontmatter_file("path/to/template.jinja2", **ctx)
+
+        Args:
+            file_path: Path to a .yaml template file.
+
+        Returns:
+            A PromptStack with the loaded template.
+
+        Raises:
+            FileNotFoundError: If the file doesn't exist.
+            ValueError: For .jinja2 files (points to frontmatter module).
+        """
+        path = Path(file_path)
+        if not path.exists():
+            raise FileNotFoundError(f"Template file not found: {path}")
+
+        if path.suffix in (".jinja2", ".j2"):
+            raise ValueError(
+                f"PromptStack.from_file() does not support {path.suffix} files. "
+                f"For YAML frontmatter templates use:\n"
+                f"  from promptfw.frontmatter import render_frontmatter_file\n"
+                f"  messages = render_frontmatter_file('{path}', **context)"
+            )
+
+        registry = TemplateRegistry()
+        registry._load_yaml_file(path)
+        return cls(registry=registry)
+
     def register(self, template: PromptTemplate) -> None:
         """Register a single template programmatically."""
         self.registry.register(template)

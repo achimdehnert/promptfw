@@ -3,7 +3,8 @@ JSON and Markdown parsing utilities for LLM responses.
 
 LLM responses often contain JSON embedded in markdown code fences or as raw text.
 Some LLMs respond with Markdown-structured key/value text instead of JSON.
-These utilities extract and parse both formats reliably.
+Some reasoning models (e.g. DeepSeek R1) wrap output in <think>...</think> tags.
+These utilities extract and parse all formats reliably.
 
 Usage::
 
@@ -15,9 +16,9 @@ Usage::
     data = extract_json_strict(llm_response)   # dict or raises LLMResponseError
 
     # Markdown field extraction (issue #8)
-    text = "**Premise:** Eine Geschichte.\n**Themes:** Identität, Macht"
-    extract_field(text, "Premise")             # → "Eine Geschichte."
-    extract_field(text, "Missing", default="") # → ""
+    text = "**Premise:** Eine Geschichte.\\n**Themes:** Identit\u00e4t, Macht"
+    extract_field(text, "Premise")             # \u2192 "Eine Geschichte."
+    extract_field(text, "Missing", default="") # \u2192 ""
 """
 
 from __future__ import annotations
@@ -27,6 +28,35 @@ import re
 from typing import Any
 
 from promptfw.exceptions import LLMResponseError
+
+# ---------------------------------------------------------------------------
+# Reasoning tag stripping (DeepSeek R1, QwQ, etc.)
+# ---------------------------------------------------------------------------
+
+_REASONING_TAGS = re.compile(
+    r"<(?:think|reasoning|thought)>[\s\S]*?</(?:think|reasoning|thought)>",
+    re.IGNORECASE,
+)
+
+
+def strip_reasoning_tags(text: str) -> str:
+    """Strip <think>/<reasoning>/<thought> blocks from LLM responses.
+
+    Reasoning models like DeepSeek R1 wrap their chain-of-thought in
+    XML-style tags.  This function removes those blocks so downstream
+    parsers see only the final output.
+
+    This is a public utility — consuming code can call it directly::
+
+        from promptfw.parsing import strip_reasoning_tags
+        clean = strip_reasoning_tags(raw_llm_output)
+    """
+    return _REASONING_TAGS.sub("", text).strip()
+
+
+# ---------------------------------------------------------------------------
+# Field extraction from Markdown-style LLM responses
+# ---------------------------------------------------------------------------
 
 # Matches **Field:** value (colon before closing **), Field:, ### Field patterns.
 # Group 1: field name from **Name:** pattern (colon inside bold)
@@ -42,6 +72,10 @@ _FIELD_HEADER = re.compile(
     r"\s*(.*)",
     re.IGNORECASE,
 )
+
+# ---------------------------------------------------------------------------
+# JSON extraction patterns
+# ---------------------------------------------------------------------------
 
 # Ordered list of patterns tried in sequence — most specific first.
 _OBJECT_PATTERNS = [
@@ -75,6 +109,7 @@ def extract_json(text: str) -> dict | None:
     Extract the first JSON object from an LLM response string.
 
     Handles:
+    - <think>/<reasoning> blocks (stripped automatically)
     - Markdown-fenced blocks: ```json { ... } ```
     - Plain fenced blocks:    ``` { ... } ```
     - Raw JSON objects anywhere in the text
@@ -83,6 +118,7 @@ def extract_json(text: str) -> dict | None:
     """
     if not text or not text.strip():
         return None
+    text = strip_reasoning_tags(text)
     result = _try_patterns(text, _OBJECT_PATTERNS)
     if isinstance(result, dict):
         return result
@@ -93,12 +129,14 @@ def extract_json_list(text: str) -> list:
     """
     Extract the first JSON array from an LLM response string.
 
-    Handles the same patterns as ``extract_json``.
+    Handles the same patterns as ``extract_json``, including
+    <think> tag stripping.
 
     Returns an empty list if no valid JSON array is found.
     """
     if not text or not text.strip():
         return []
+    text = strip_reasoning_tags(text)
     result = _try_patterns(text, _ARRAY_PATTERNS)
     if isinstance(result, list):
         return result
@@ -151,10 +189,10 @@ def extract_field(
 
     Examples::
 
-        text = "**Premise:** Eine Geschichte.\\n**Themes:** Identität, Macht"
-        extract_field(text, "Premise")            # → "Eine Geschichte."
-        extract_field(text, "Themes")             # → "Identität, Macht"
-        extract_field(text, "Missing", default="") # → ""
+        text = "**Premise:** Eine Geschichte.\\n**Themes:** Identit\u00e4t, Macht"
+        extract_field(text, "Premise")            # \u2192 "Eine Geschichte."
+        extract_field(text, "Themes")             # \u2192 "Identit\u00e4t, Macht"
+        extract_field(text, "Missing", default="") # \u2192 ""
     """
     if not text or not text.strip():
         return default
