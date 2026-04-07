@@ -1,0 +1,65 @@
+# ╔═══════════════════════════════════════════════════════════════════════════╗
+# ║  PROMPTFW CI — Lint, Test, Security                                      ║
+# ╚═══════════════════════════════════════════════════════════════════════════╝
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    name: "Lint & Format"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install "ruff==0.15.4"
+      - run: ruff check . --output-format=github
+      - run: ruff format --check .
+
+  test:
+    name: "Tests (Python ${{ matrix.python-version }})"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install package + dev deps
+        run: |
+          pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: Run tests with coverage
+        run: pytest tests/ -v --tb=short --cov --cov-report=term-missing
+      - name: Coverage gate (≥80%)
+        run: |
+          COV=$(pytest tests/ --cov --cov-report=term 2>/dev/null | grep "^TOTAL" | awk '{print $NF}' | tr -d '%')
+          echo "Coverage: ${COV}%"
+          if [ -n "$COV" ] && [ "$COV" -lt 80 ]; then
+            echo "::error::Coverage ${COV}% is below 80% threshold"
+            exit 1
+          fi
+
+  security:
+    name: "Security (pip-audit)"
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: |
+          pip install pip-audit
+          pip install -e .
+          pip-audit || true
