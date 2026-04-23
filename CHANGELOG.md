@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.8.1] — 2026-04-23
+
+- fix: Python classifier 3.11 → 3.12 (matches requires-python >=3.12)
+
 ## [0.8.0] — 2026-04-23
 
 - chore: sync .windsurf rules (typechange symlink→file)
