@@ -44,7 +44,7 @@ rendered = stack.render("story.task.write", {
 SYSTEM           → Role & base behaviour      (stable, cacheable)
 FORMAT           → Format-specific rules       (stable, cacheable)
 CONTEXT          → Generic runtime context     (dynamic)
-CONTEXT_PROJECT  → Project-level context       (dynamic, v0.8.0)
+CONTEXT_PROJECT  → Project-level context       (dynamic, v0.8.1)
 CONTEXT_CHAPTER  → Chapter-level context       (dynamic, v0.5.0)
 CONTEXT_SCENE    → Scene-level context         (dynamic, v0.5.0)
 TASK             → Concrete task               (dynamic)
