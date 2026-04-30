@@ -1,27 +1,44 @@
 # Changelog
 
+All notable changes to this project are documented here.
+Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+
+---
+
 ## [0.8.1] — 2026-04-23
 
-- fix: Python classifier 3.11 → 3.12 (matches requires-python >=3.12)
+### Fixed
+- Python classifier 3.11 → 3.12 (matches `requires-python >=3.12`)
+
+---
 
 ## [0.8.0] — 2026-04-23
 
-- chore: sync .windsurf rules (typechange symlink→file)
-- chore: requires-python >= 3.12
-- chore: add MIT LICENSE
-- ci: add CI workflow with ruff lint, coverage gate, pip-audit
-- feat(contrib.django): DB-backed prompt management — ADR-146 Phase 1 (v0.8.0)
-- feat: from_file() + frontmatter module + <think> tag stripping (SSoT)
-- feat: add py.typed marker (PEP 561, ADR-155)
-- feat(writing): add academic + scientific writing templates (v0.7.0) — IMRaD, abstract, section-writing, prose improvement
-- chore: add .windsurf/ to .gitignore (platform-audit fix)
-- feat(promptfw): add concept_analysis domain stack (v0.6.0)
+### Added
+- `contrib.django`: DB-backed prompt management — ADR-146 Phase 1
+- `from_file()` + frontmatter module + `<think>` tag stripping
+- `py.typed` marker (PEP 561, ADR-155)
+- CI workflow with ruff lint, coverage gate, pip-audit
 
+### Changed
+- `requires-python = ">=3.12"` — aligns with platform standard
+- `.windsurf/` excluded from builds (`.gitignore` fix)
 
-All notable changes to this project will be documented in this file.
+---
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.7.0]
+
+### Added
+- Academic + scientific writing templates — IMRaD, abstract, section-writing, prose improvement
+
+---
+
+## [0.6.0]
+
+### Added
+- `concept_analysis` domain stack
+
+---
 
 ## [0.5.5] — 2026-03-09
 
