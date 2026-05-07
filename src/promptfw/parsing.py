@@ -203,7 +203,7 @@ def extract_field(
     entries: list[tuple[int, str, str]] = []
     for m in _FIELD_HEADER.finditer(text):
         name = (m.group(1) or m.group(2) or "").strip()
-        entries.append((m.start(), name, m.group(3).strip()))
+        entries.append((m.end(), name, m.group(3).strip()))
 
     # Find the target field (case-insensitive exact match).
     target = field.strip().lower()
