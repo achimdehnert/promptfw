@@ -11,6 +11,7 @@ def _auto_token_count(text: str) -> int:
     """Return tiktoken token count if available, else 0 (no estimate)."""
     try:
         import tiktoken
+
         enc = tiktoken.get_encoding("cl100k_base")
         return len(enc.encode(text))
     except ImportError:

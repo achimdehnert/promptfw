@@ -1,7 +1,5 @@
 """Tests for promptfw writing templates and get_writing_stack."""
 
-import pytest
-
 from promptfw.schema import TemplateLayer
 from promptfw.stack import PromptStack
 from promptfw.writing import WRITING_TEMPLATES, get_writing_stack
@@ -80,15 +78,18 @@ class TestGetWritingStack:
 
     def test_should_render_write_chapter_task(self):
         stack = get_writing_stack()
-        rendered = stack.render("writing.task.write_chapter", {
-            "chapter_number": 3,
-            "chapter_title": "Die Rückkehr",
-            "chapter_outline": "Der Held kehrt zurück und findet sein Dorf verändert.",
-            "target_words": 2500,
-            "pov_character": "Elias",
-            "mood": "melancholic",
-            "genre": "Fantasy",
-        })
+        rendered = stack.render(
+            "writing.task.write_chapter",
+            {
+                "chapter_number": 3,
+                "chapter_title": "Die Rückkehr",
+                "chapter_outline": "Der Held kehrt zurück und findet sein Dorf verändert.",
+                "target_words": 2500,
+                "pov_character": "Elias",
+                "mood": "melancholic",
+                "genre": "Fantasy",
+            },
+        )
         assert "3" in rendered.user
         assert "Die Rückkehr" in rendered.user
         assert "Elias" in rendered.user
@@ -96,13 +97,16 @@ class TestGetWritingStack:
 
     def test_should_render_write_chapter_with_optional_fields(self):
         stack = get_writing_stack()
-        rendered = stack.render("writing.task.write_chapter", {
-            "chapter_number": 1,
-            "chapter_title": "Aufbruch",
-            "chapter_outline": "Elias bricht auf.",
-            "story_premise": "Ein Schmied entdeckt seine Kräfte.",
-            "prior_chapter_summary": "Der Prolog endet mit einem Omen.",
-        })
+        rendered = stack.render(
+            "writing.task.write_chapter",
+            {
+                "chapter_number": 1,
+                "chapter_title": "Aufbruch",
+                "chapter_outline": "Elias bricht auf.",
+                "story_premise": "Ein Schmied entdeckt seine Kräfte.",
+                "prior_chapter_summary": "Der Prolog endet mit einem Omen.",
+            },
+        )
         assert "Ein Schmied" in rendered.user
         assert "Der Prolog" in rendered.user
 
@@ -121,45 +125,60 @@ class TestGetWritingStack:
 
     def test_should_render_improve_prose_task(self):
         stack = get_writing_stack()
-        rendered = stack.render("writing.task.improve_prose", {
-            "original_text": "Er ging schnell. Es war dunkel.",
-            "improvement_focus": "Rhythmus und Show-don't-tell",
-        })
+        rendered = stack.render(
+            "writing.task.improve_prose",
+            {
+                "original_text": "Er ging schnell. Es war dunkel.",
+                "improvement_focus": "Rhythmus und Show-don't-tell",
+            },
+        )
         assert "Er ging schnell" in rendered.user
         assert "Rhythmus" in rendered.user
 
     def test_should_render_summarize_task(self):
         stack = get_writing_stack()
-        rendered = stack.render("writing.task.summarize", {
-            "chapter_text": "Elias betrat die Stadt. Die Menschen sahen ihn misstrauisch an.",
-        })
+        rendered = stack.render(
+            "writing.task.summarize",
+            {
+                "chapter_text": "Elias betrat die Stadt. Die Menschen sahen ihn misstrauisch an.",
+            },
+        )
         assert "Elias betrat" in rendered.user
 
     def test_should_render_generate_outline_task(self):
         stack = get_writing_stack()
-        rendered = stack.render("writing.task.generate_outline", {
-            "chapter_number": 2,
-        })
+        rendered = stack.render(
+            "writing.task.generate_outline",
+            {
+                "chapter_number": 2,
+            },
+        )
         assert "2" in rendered.user
         assert "Eröffnungsszene" in rendered.user
 
     def test_should_render_add_dialogue_task(self):
         stack = get_writing_stack()
-        rendered = stack.render("writing.task.add_dialogue", {
-            "characters": "Elias, Maria",
-            "dialogue_purpose": "Verhandlung über das Schicksal des Dorfes",
-            "context_text": "Sie standen sich gegenüber.",
-        })
+        rendered = stack.render(
+            "writing.task.add_dialogue",
+            {
+                "characters": "Elias, Maria",
+                "dialogue_purpose": "Verhandlung über das Schicksal des Dorfes",
+                "context_text": "Sie standen sich gegenüber.",
+            },
+        )
         assert "Elias, Maria" in rendered.user
 
     def test_should_render_write_scene_task(self):
         stack = get_writing_stack()
-        rendered = stack.render("writing.task.write_scene", {
-            "scene_description": "Elias betritt die Schmiede im Morgengrauen.",
-            "characters": "Elias",
-            "location": "Dorfschmiede",
-            "mood": "hopeful",
-        })
+        rendered = stack.render(
+            "writing.task.write_scene",
+            {
+                "scene_description": "Elias betritt die Schmiede im Morgengrauen.",
+                "characters": "Elias",
+                "location": "Dorfschmiede",
+                "mood": "hopeful",
+            },
+        )
         assert "Elias" in rendered.user
         assert "Dorfschmiede" in rendered.user
 

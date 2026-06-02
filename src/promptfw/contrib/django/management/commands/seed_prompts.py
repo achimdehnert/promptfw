@@ -10,7 +10,6 @@ import yaml
 from pathlib import Path
 
 from django.core.management.base import BaseCommand, CommandError
-from django.utils.translation import gettext_lazy as _
 
 from promptfw.contrib.django.models import PromptTemplate
 

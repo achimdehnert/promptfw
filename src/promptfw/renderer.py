@@ -95,9 +95,7 @@ class PromptRenderer:
         ordered = sorted(
             templates,
             key=lambda t: (
-                0 if t.layer in _system_layers else
-                1 if t.layer in USER_LAYERS else
-                2  # FEW_SHOT
+                0 if t.layer in _system_layers else 1 if t.layer in USER_LAYERS else 2  # FEW_SHOT
             ),
         )
 
@@ -109,9 +107,7 @@ class PromptRenderer:
                     if user_text:
                         few_shot_messages.append({"role": "user", "content": user_text})
                     if assistant_text:
-                        few_shot_messages.append(
-                            {"role": "assistant", "content": assistant_text}
-                        )
+                        few_shot_messages.append({"role": "assistant", "content": assistant_text})
                 continue
 
             rendered = self.render_template(tmpl, context)
@@ -182,6 +178,7 @@ class PromptRenderer:
         """Rough token estimate — 1 token ≈ 4 chars. Use tiktoken for accuracy."""
         try:
             import tiktoken
+
             enc = tiktoken.get_encoding("cl100k_base")
             return len(enc.encode(text))
         except ImportError:

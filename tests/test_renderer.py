@@ -32,7 +32,9 @@ def test_should_combine_system_and_format_into_system_user_into_user(renderer):
         PromptTemplate(id="f1", layer=TemplateLayer.FORMAT, template="Use {{ style }} style."),
         PromptTemplate(id="t1", layer=TemplateLayer.TASK, template="Write about {{ topic }}."),
     ]
-    result = renderer.render_stack(templates, {"role": "author", "style": "formal", "topic": "dragons"})
+    result = renderer.render_stack(
+        templates, {"role": "author", "style": "formal", "topic": "dragons"}
+    )
     assert "author" in result.system
     assert "formal" in result.system
     assert "dragons" in result.user
@@ -57,8 +59,9 @@ def test_should_skip_whitespace_only_templates(renderer):
 
 
 def test_should_estimate_nonzero_tokens_for_nonempty_template(renderer):
-    t = PromptTemplate(id="t1", layer=TemplateLayer.TASK,
-                       template="Write a long story about dragons and wizards.")
+    t = PromptTemplate(
+        id="t1", layer=TemplateLayer.TASK, template="Write a long story about dragons and wizards."
+    )
     result = renderer.render_stack([t], {})
     assert result.estimated_tokens > 0
 

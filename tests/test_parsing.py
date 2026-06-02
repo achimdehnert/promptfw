@@ -47,7 +47,7 @@ class TestExtractJson:
         assert result == {"fenced": True}
 
     def test_should_handle_case_insensitive_json_fence(self):
-        text = "```JSON\n{\"key\": \"val\"}\n```"
+        text = '```JSON\n{"key": "val"}\n```'
         result = extract_json(text)
         assert result == {"key": "val"}
 

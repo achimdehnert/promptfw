@@ -25,6 +25,7 @@ Usage::
     # [{"role": "system", "content": "Du bist ein Experte."},
     #  {"role": "user", "content": "Analysiere: Lorem ipsum"}]
 """
+
 from __future__ import annotations
 
 import logging
@@ -79,16 +80,14 @@ def render_frontmatter_string(
         import yaml
     except ImportError as e:
         raise ImportError(
-            "PyYAML is required for frontmatter templates. "
-            "Install with: pip install pyyaml"
+            "PyYAML is required for frontmatter templates. Install with: pip install pyyaml"
         ) from e
 
     try:
         from jinja2 import Template
     except ImportError as e:
         raise ImportError(
-            "Jinja2 is required for frontmatter templates. "
-            "Install with: pip install jinja2"
+            "Jinja2 is required for frontmatter templates. Install with: pip install jinja2"
         ) from e
 
     if not content.startswith("---"):
@@ -100,9 +99,7 @@ def render_frontmatter_string(
 
     frontmatter = yaml.safe_load(parts[1])
     if not isinstance(frontmatter, dict):
-        raise ValueError(
-            f"Frontmatter must be a YAML dict, got {type(frontmatter).__name__}"
-        )
+        raise ValueError(f"Frontmatter must be a YAML dict, got {type(frontmatter).__name__}")
 
     messages: list[dict[str, str]] = []
 

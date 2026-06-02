@@ -144,9 +144,7 @@ def _load_from_db(action_code: str, *, tenant_id: int | None = None):
         deleted_at__isnull=True,
     )
     if _is_multi_tenant() and tenant_id is not None:
-        qs = qs.filter(
-            models.Q(tenant_id=tenant_id) | models.Q(tenant_id__isnull=True)
-        )
+        qs = qs.filter(models.Q(tenant_id=tenant_id) | models.Q(tenant_id__isnull=True))
     tpl = qs.order_by("-version").first()
 
     cache.set(cache_key, tpl if tpl else "__NONE__", timeout=_get_cache_ttl())
@@ -157,15 +155,11 @@ def _render_db_template(tpl, context: dict) -> list[dict[str, str]]:
     """Render DB template with SandboxedEnvironment."""
     messages = []
     if tpl.system_template:
-        sys_rendered = (
-            _JINJA_ENV.from_string(tpl.system_template).render(**context).strip()
-        )
+        sys_rendered = _JINJA_ENV.from_string(tpl.system_template).render(**context).strip()
         if sys_rendered:
             messages.append({"role": "system", "content": sys_rendered})
 
-    user_rendered = (
-        _JINJA_ENV.from_string(tpl.user_template).render(**context).strip()
-    )
+    user_rendered = _JINJA_ENV.from_string(tpl.user_template).render(**context).strip()
     messages.append({"role": "user", "content": user_rendered})
     return messages
 

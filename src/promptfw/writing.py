@@ -136,7 +136,7 @@ WRITING_TEMPLATES: list[PromptTemplate] = [
         format_type="roman",
         phase="writing",
         template=(
-            "Schreibe Kapitel {{ chapter_number }}: \"{{ chapter_title }}\"\n\n"
+            'Schreibe Kapitel {{ chapter_number }}: "{{ chapter_title }}"\n\n'
             "{% if story_premise %}Prämisse: {{ story_premise }}\n{% endif %}"
             "{% if prior_chapter_summary %}Zusammenfassung des vorherigen Kapitels:\n{{ prior_chapter_summary }}\n\n{% endif %}"
             "Outline dieses Kapitels:\n{{ chapter_outline }}\n\n"

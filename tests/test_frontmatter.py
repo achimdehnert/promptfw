@@ -1,6 +1,6 @@
 """Tests for promptfw.frontmatter module."""
+
 import pytest
-from pathlib import Path
 
 from promptfw.frontmatter import render_frontmatter_file, render_frontmatter_string
 
@@ -83,9 +83,7 @@ user: |
   {% if chapter_text %}Kapitel: {{ chapter_text }}{% endif %}
   {% if focus %}Fokus: {{ focus }}{% endif %}
 ---"""
-        messages = render_frontmatter_string(
-            content, chapter_text="Einleitung", focus="Methodik"
-        )
+        messages = render_frontmatter_string(content, chapter_text="Einleitung", focus="Methodik")
         assert "Einleitung" in messages[1]["content"]
         assert "Methodik" in messages[1]["content"]
 

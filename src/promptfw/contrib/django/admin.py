@@ -100,9 +100,7 @@ class PromptTemplateAdmin(admin.ModelAdmin):
         for ac in action_codes:
             invalidate_cache(ac)
 
-    @admin.action(
-        description=_("Create new version (copy with incremented version)")
-    )
+    @admin.action(description=_("Create new version (copy with incremented version)"))
     def create_new_version(self, request, queryset):
         count = 0
         for tpl in queryset.filter(is_active=True):
