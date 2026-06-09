@@ -1,5 +1,4 @@
 """Tests for <think> tag stripping in promptfw.parsing."""
-import pytest
 
 from promptfw.parsing import (
     extract_json,
@@ -17,16 +16,16 @@ class TestStripReasoningTags:
         assert strip_reasoning_tags(text) == '{"key": "value"}'
 
     def test_strips_reasoning_tags(self):
-        text = '<reasoning>\nStep 1...\n</reasoning>\nResult'
-        assert strip_reasoning_tags(text) == 'Result'
+        text = "<reasoning>\nStep 1...\n</reasoning>\nResult"
+        assert strip_reasoning_tags(text) == "Result"
 
     def test_strips_thought_tags(self):
-        text = '<thought>Hmm...</thought>Answer'
-        assert strip_reasoning_tags(text) == 'Answer'
+        text = "<thought>Hmm...</thought>Answer"
+        assert strip_reasoning_tags(text) == "Answer"
 
     def test_case_insensitive(self):
-        text = '<THINK>\nreasoning\n</THINK>\noutput'
-        assert strip_reasoning_tags(text) == 'output'
+        text = "<THINK>\nreasoning\n</THINK>\noutput"
+        assert strip_reasoning_tags(text) == "output"
 
     def test_no_tags_unchanged(self):
         text = '{"key": "value"}'
@@ -36,8 +35,8 @@ class TestStripReasoningTags:
         assert strip_reasoning_tags("") == ""
 
     def test_multiple_think_blocks(self):
-        text = '<think>first</think>middle<think>second</think>end'
-        assert strip_reasoning_tags(text) == 'middleend'
+        text = "<think>first</think>middle<think>second</think>end"
+        assert strip_reasoning_tags(text) == "middleend"
 
 
 class TestExtractJsonWithThinkTags:
@@ -49,10 +48,7 @@ class TestExtractJsonWithThinkTags:
         assert result == {"verdict": "accept"}
 
     def test_json_in_code_fence_after_think(self):
-        text = (
-            '<think>\nI need to format as JSON...\n</think>\n'
-            '```json\n{"score": 8}\n```'
-        )
+        text = '<think>\nI need to format as JSON...\n</think>\n```json\n{"score": 8}\n```'
         result = extract_json(text)
         assert result == {"score": 8}
 
@@ -69,14 +65,11 @@ class TestExtractJsonWithThinkTags:
 
     def test_think_block_containing_json(self):
         """JSON inside <think> should be ignored, only final output matters."""
-        text = (
-            '<think>\nIntermediate: {"wrong": true}\n</think>\n'
-            '{"correct": true}'
-        )
+        text = '<think>\nIntermediate: {"wrong": true}\n</think>\n{"correct": true}'
         result = extract_json(text)
         assert result == {"correct": True}
 
     def test_no_json_after_think_returns_none(self):
-        text = '<think>\nJust reasoning, no JSON output.\n</think>\nPlain text.'
+        text = "<think>\nJust reasoning, no JSON output.\n</think>\nPlain text."
         result = extract_json(text)
         assert result is None

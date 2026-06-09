@@ -13,7 +13,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = []
@@ -88,9 +87,7 @@ class Migration(migrations.Migration):
                 (
                     "user_template",
                     models.TextField(
-                        help_text=(
-                            "User prompt (Jinja2). Variables: {{ var_name }}. Required."
-                        ),
+                        help_text=("User prompt (Jinja2). Variables: {{ var_name }}. Required."),
                         verbose_name="user template",
                     ),
                 ),

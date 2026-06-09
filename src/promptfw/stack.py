@@ -86,9 +86,7 @@ class PromptStack:
         template = self.registry.get(pattern)
         return self.renderer.render_stack([template], context)
 
-    def render_stack(
-        self, patterns: list[str], context: dict[str, Any]
-    ) -> RenderedPrompt:
+    def render_stack(self, patterns: list[str], context: dict[str, Any]) -> RenderedPrompt:
         """
         Render multiple templates (in order) into a combined RenderedPrompt.
 

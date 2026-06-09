@@ -8,23 +8,22 @@ objects, ensuring the registry can be tested without a Django environment.
 from __future__ import annotations
 
 from types import SimpleNamespace
-from typing import Any
 
 import pytest
 
 from promptfw.django_registry import (
-    BFAGENT_FIELD_MAP,
     DjangoTemplateRegistry,
     _bfagent_output_format_to_response_format,
     _safe_repr,
 )
 from promptfw.exceptions import TemplateNotFoundError
-from promptfw.schema import PromptTemplate, TemplateLayer
+from promptfw.schema import TemplateLayer
 
 
 # ---------------------------------------------------------------------------
 # Helpers — build mock ORM objects
 # ---------------------------------------------------------------------------
+
 
 def _make_bfagent_obj(**kwargs) -> SimpleNamespace:
     """Return a SimpleNamespace mimicking a bfagent PromptTemplate ORM object."""
@@ -54,6 +53,7 @@ def _make_bfagent_obj(**kwargs) -> SimpleNamespace:
 # ---------------------------------------------------------------------------
 # from_queryset — basic happy path
 # ---------------------------------------------------------------------------
+
 
 class TestFromQueryset:
     def test_should_load_task_template_from_single_object(self):
@@ -120,6 +120,7 @@ class TestFromQueryset:
 # Field mapping
 # ---------------------------------------------------------------------------
 
+
 class TestFieldMapping:
     def test_should_combine_required_and_optional_variables(self):
         obj = _make_bfagent_obj(
@@ -179,6 +180,7 @@ class TestFieldMapping:
 # output_format → response_format mapping
 # ---------------------------------------------------------------------------
 
+
 class TestOutputFormatMapping:
     def test_should_map_json_to_json_object(self):
         obj = _make_bfagent_obj(output_format="json")
@@ -219,6 +221,7 @@ class TestOutputFormatMapping:
 # strict mode
 # ---------------------------------------------------------------------------
 
+
 class TestStrictMode:
     def test_should_raise_on_empty_template_key_in_strict_mode(self):
         obj = _make_bfagent_obj(template_key="")
@@ -244,6 +247,7 @@ class TestStrictMode:
 # ---------------------------------------------------------------------------
 # Custom field_map
 # ---------------------------------------------------------------------------
+
 
 class TestCustomFieldMap:
     def test_should_accept_custom_field_map(self):
@@ -276,6 +280,7 @@ class TestCustomFieldMap:
 # ---------------------------------------------------------------------------
 # Integration: rendering with PromptRenderer
 # ---------------------------------------------------------------------------
+
 
 class TestIntegrationWithRenderer:
     def test_should_render_task_template_from_registry(self):
@@ -325,6 +330,7 @@ class TestIntegrationWithRenderer:
 # _safe_repr
 # ---------------------------------------------------------------------------
 
+
 class TestSafeRepr:
     def test_should_include_class_name(self):
         obj = _make_bfagent_obj()
@@ -341,5 +347,6 @@ class TestSafeRepr:
             @property
             def pk(self):
                 raise RuntimeError("broken")
+
         r = _safe_repr(Broken())
         assert r  # just doesn't crash

@@ -82,7 +82,7 @@ LEKTORAT_TEMPLATES: list[PromptTemplate] = [
             "{% if chapter_number %}Kapitel: {{ chapter_number }}\n{% endif %}"
             "TEXT:\n{{ content }}\n\n"
             "Antworte NUR als JSON-Array: "
-            "[{\"name\": \"...\", \"varianten\": [], \"rolle\": \"...\", ...}]"
+            '[{"name": "...", "varianten": [], "rolle": "...", ...}]'
         ),
         variables=["content", "chapter_number"],
     ),
@@ -101,10 +101,10 @@ LEKTORAT_TEMPLATES: list[PromptTemplate] = [
             "- Namensvarianten die nicht dokumentiert sind\n"
             "- Verhaltensinkonsistenzen gegenüber etabliertem Charakter\n\n"
             "Antworte NUR als JSON:\n"
-            "{\"inconsistencies\": [{\"figur\": \"...\", \"typ\": \"...\", "
-            "\"kapitel_alt\": 0, \"kapitel_neu\": 0, "
-            "\"wert_alt\": \"...\", \"wert_neu\": \"...\", "
-            "\"schwere\": \"hoch/mittel/niedrig\"}]}"
+            '{"inconsistencies": [{"figur": "...", "typ": "...", '
+            '"kapitel_alt": 0, "kapitel_neu": 0, '
+            '"wert_alt": "...", "wert_neu": "...", '
+            '"schwere": "hoch/mittel/niedrig"}]}'
         ),
         variables=["known_characters", "chapter_number", "new_references"],
     ),
@@ -127,11 +127,11 @@ LEKTORAT_TEMPLATES: list[PromptTemplate] = [
             "- Typische Sprachmuster und Stilmittel\n\n"
             "TEXT:\n{{ text }}\n\n"
             "Antworte NUR als JSON:\n"
-            "{\"satzstruktur\": \"...\", \"wortwahl\": \"...\", "
-            "\"perspektive\": \"...\", \"dialog\": \"...\", "
-            "\"beschreibung\": \"...\", \"emotionale_tiefe\": \"...\", "
-            "\"typische_muster\": [], \"stilmittel\": [], "
-            "\"gesamteindruck\": \"...\"}"
+            '{"satzstruktur": "...", "wortwahl": "...", '
+            '"perspektive": "...", "dialog": "...", '
+            '"beschreibung": "...", "emotionale_tiefe": "...", '
+            '"typische_muster": [], "stilmittel": [], '
+            '"gesamteindruck": "..."}'
         ),
         variables=["text"],
     ),
@@ -151,10 +151,10 @@ LEKTORAT_TEMPLATES: list[PromptTemplate] = [
             "{% if threshold %}Melde nur Wiederholungen ab {{ threshold }}× Vorkommen.\n{% endif %}"
             "TEXT:\n{{ text }}\n\n"
             "Antworte NUR als JSON:\n"
-            "{\"wort_wiederholungen\": [{\"wort\": \"...\", \"anzahl\": 0, "
-            "\"positionen\": []}], "
-            "\"phrasen_wiederholungen\": [{\"phrase\": \"...\", \"anzahl\": 0}], "
-            "\"inhaltliche_wiederholungen\": [\"...\"]}"
+            '{"wort_wiederholungen": [{"wort": "...", "anzahl": 0, '
+            '"positionen": []}], '
+            '"phrasen_wiederholungen": [{"phrase": "...", "anzahl": 0}], '
+            '"inhaltliche_wiederholungen": ["..."]}'
         ),
         variables=["text", "threshold"],
     ),
@@ -175,10 +175,10 @@ LEKTORAT_TEMPLATES: list[PromptTemplate] = [
             "- Inkonsistenten Zeitangaben (Tageszeit, Datum, Jahreszeit)\n"
             "- Flashbacks die nicht klar markiert sind\n\n"
             "Antworte NUR als JSON:\n"
-            "{\"ereignisse\": [{\"beschreibung\": \"...\", \"zeitpunkt\": \"...\"}], "
-            "\"widersprueche\": [{\"ereignis_a\": \"...\", \"ereignis_b\": \"...\", "
-            "\"problem\": \"...\"}], "
-            "\"unklarheiten\": [\"...\"]}"
+            '{"ereignisse": [{"beschreibung": "...", "zeitpunkt": "..."}], '
+            '"widersprueche": [{"ereignis_a": "...", "ereignis_b": "...", '
+            '"problem": "..."}], '
+            '"unklarheiten": ["..."]}'
         ),
         variables=["text", "known_events"],
     ),

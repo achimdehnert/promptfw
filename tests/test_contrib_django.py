@@ -40,7 +40,6 @@ import pytest
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, connection
-from django.test.utils import setup_test_environment
 
 from promptfw.contrib.django.models import (
     HAS_PYDANTIC,
@@ -273,9 +272,7 @@ class TestResolution:
 
     def test_render_prompt_from_db(self, sample_template):
         """T19: render_prompt() resolves from DB and renders correctly."""
-        messages = render_prompt(
-            "test-hub.domain.action", role="assistant", topic="Python"
-        )
+        messages = render_prompt("test-hub.domain.action", role="assistant", topic="Python")
         assert len(messages) == 2
         assert messages[0]["role"] == "system"
         assert "assistant" in messages[0]["content"]
@@ -284,9 +281,7 @@ class TestResolution:
 
     def test_render_prompt_uses_defaults(self, sample_template):
         """T20: render_prompt() merges defaults — caller wins on conflict."""
-        messages = render_prompt(
-            "test-hub.domain.action", topic="AI"
-        )
+        messages = render_prompt("test-hub.domain.action", topic="AI")
         # role comes from defaults ("writer")
         assert "writer" in messages[0]["content"]
         assert "AI" in messages[1]["content"]
@@ -353,9 +348,7 @@ class TestResolution:
 
     def test_render_db_template_sandboxed(self, sample_template):
         """T29: _render_db_template uses SandboxedEnvironment (no introspection)."""
-        messages = _render_db_template(
-            sample_template, {"role": "test", "topic": "safety"}
-        )
+        messages = _render_db_template(sample_template, {"role": "test", "topic": "safety"})
         assert len(messages) == 2
         assert "test" in messages[0]["content"]
 
@@ -454,9 +447,7 @@ class TestAdmin:
         old = PromptTemplate.objects.get(pk=sample_template.pk)
         assert old.is_active is False
 
-        new = PromptTemplate.objects.get(
-            action_code="test-hub.domain.action", version=2
-        )
+        new = PromptTemplate.objects.get(action_code="test-hub.domain.action", version=2)
         assert new.is_active is True
         assert new.created_by == "testuser"
 

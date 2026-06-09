@@ -93,13 +93,8 @@ class Command(BaseCommand):
         # 2. Required variables covered by defaults
         if tpl.variables_schema and tpl.is_active:
             for var_name, spec in tpl.variables_schema.items():
-                if (
-                    spec.get("required")
-                    and var_name not in (tpl.defaults or {})
-                ):
-                    self._warning(
-                        f"{prefix} Required variable '{var_name}' has no default"
-                    )
+                if spec.get("required") and var_name not in (tpl.defaults or {}):
+                    self._warning(f"{prefix} Required variable '{var_name}' has no default")
                     warnings += 1
 
         # 3. Jinja2 syntax
@@ -135,9 +130,7 @@ class Command(BaseCommand):
             .filter(cnt__gt=1)
         )
         for d in dupes:
-            self._error(
-                f"[{d['action_code']}] Duplicate active: {d['cnt']} active versions"
-            )
+            self._error(f"[{d['action_code']}] Duplicate active: {d['cnt']} active versions")
             errors += 1
         return errors
 

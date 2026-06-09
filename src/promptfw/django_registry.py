@@ -57,6 +57,7 @@ FieldMap = dict[str, str | Callable[[Any], Any]]
 # Built-in field maps
 # ---------------------------------------------------------------------------
 
+
 def _bfagent_output_format_to_response_format(obj: Any) -> str | None:
     """Map bfagent ``output_format`` choices to promptfw ``response_format``."""
     mapping = {
@@ -85,9 +86,7 @@ BFAGENT_FIELD_MAP: FieldMap = {
     # layer: always TASK for the primary record; SYSTEM split is handled separately
     "layer": lambda obj: TemplateLayer.TASK,
     # variables: union of required + optional
-    "variables": lambda obj: list(
-        (obj.required_variables or []) + (obj.optional_variables or [])
-    ),
+    "variables": lambda obj: list((obj.required_variables or []) + (obj.optional_variables or [])),
     # version: e.g. "1.0" → keep as-is
     "version": "version",
     # response_format: derived from output_format
@@ -110,6 +109,7 @@ BFAGENT_FIELD_MAP: FieldMap = {
 # ---------------------------------------------------------------------------
 # DjangoTemplateRegistry
 # ---------------------------------------------------------------------------
+
 
 class DjangoTemplateRegistry(TemplateRegistry):
     """
@@ -220,7 +220,7 @@ class DjangoTemplateRegistry(TemplateRegistry):
             except ValueError:
                 raise ValueError(
                     f"Invalid layer {layer!r} for id={template_id!r}. "
-                    f"Valid: {[l.value for l in TemplateLayer]}"
+                    f"Valid: {[member.value for member in TemplateLayer]}"
                 )
 
         # --- Validate response_format ---
@@ -238,9 +238,18 @@ class DjangoTemplateRegistry(TemplateRegistry):
             "template": task_template_text,
         }
         # Optional fields — only include if present in resolved and non-None
-        for field in ("variables", "version", "response_format", "output_schema",
-                      "phase", "task", "metadata", "cacheable", "tokens_estimate",
-                      "format_type"):
+        for field in (
+            "variables",
+            "version",
+            "response_format",
+            "output_schema",
+            "phase",
+            "task",
+            "metadata",
+            "cacheable",
+            "tokens_estimate",
+            "format_type",
+        ):
             val = resolved.get(field)
             if val is not None:
                 task_kwargs[field] = val
@@ -268,6 +277,7 @@ class DjangoTemplateRegistry(TemplateRegistry):
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _resolve_fields(obj: Any, field_map: FieldMap) -> dict[str, Any]:
     """Resolve all entries in a field_map against an ORM object."""

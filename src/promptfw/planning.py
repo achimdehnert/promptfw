@@ -41,7 +41,7 @@ PLANNING_TEMPLATES: list[PromptTemplate] = [
             "1. Prämisse (2-3 Sätze): Die zentrale Idee und das Herz der Geschichte.\n"
             "2. Drei zentrale Themen (als Liste).\n"
             "3. Logline (1 Satz): Protagonist + Ziel + Hindernis + Einsatz.\n\n"
-            "Antworte als JSON: {\"premise\": \"...\", \"themes\": [\"...\"], \"logline\": \"...\"}"
+            'Antworte als JSON: {"premise": "...", "themes": ["..."], "logline": "..."}'
         ),
         variables=["title", "genre", "description"],
     ),
@@ -77,8 +77,8 @@ PLANNING_TEMPLATES: list[PromptTemplate] = [
             "2. Drei Hauptthemen (als Liste).\n"
             "3. Kurzzusammenfassung (Abstract, 100 Wörter): Für wen ist das Buch und was lernen Leser?\n"
             "4. Primäre Zielgruppe (1 Satz).\n\n"
-            "Antworte als JSON: {\"core_message\": \"...\", \"themes\": [\"...\"], "
-            "\"abstract\": \"...\", \"target_audience\": \"...\"}"
+            'Antworte als JSON: {"core_message": "...", "themes": ["..."], '
+            '"abstract": "...", "target_audience": "..."}'
         ),
         variables=["title", "description"],
     ),
@@ -116,8 +116,8 @@ PLANNING_TEMPLATES: list[PromptTemplate] = [
             "2. Zielsetzung (2-3 Sätze): Was soll die Arbeit zeigen/beweisen/entwickeln?\n"
             "3. Abstract (ca. 150 Wörter): Fragestellung, Methode, erwartete Ergebnisse, Relevanz.\n"
             "4. Fünf wissenschaftliche Keywords.\n\n"
-            "Antworte als JSON: {\"research_question\": \"...\", \"objective\": \"...\", "
-            "\"abstract\": \"...\", \"keywords\": [\"...\"]}"
+            'Antworte als JSON: {"research_question": "...", "objective": "...", '
+            '"abstract": "...", "keywords": ["..."]}'
         ),
         variables=["title", "field_of_study", "description"],
     ),
@@ -157,8 +157,8 @@ PLANNING_TEMPLATES: list[PromptTemplate] = [
             "3. Nullhypothese (H0, 1 Satz).\n"
             "4. Abstract (IMRaD, ca. 200 Wörter): Introduction / Methods / Results / Discussion.\n"
             "5. Fünf Keywords für die Literaturdatenbank.\n\n"
-            "Antworte als JSON: {\"research_question\": \"...\", \"hypothesis\": \"...\", "
-            "\"null_hypothesis\": \"...\", \"abstract\": \"...\", \"keywords\": [\"...\"]}"
+            'Antworte als JSON: {"research_question": "...", "hypothesis": "...", '
+            '"null_hypothesis": "...", "abstract": "...", "keywords": ["..."]}'
         ),
         variables=["title", "field_of_study", "description"],
     ),
@@ -195,8 +195,8 @@ PLANNING_TEMPLATES: list[PromptTemplate] = [
             "2. Drei Hauptargumente (als Liste), die die These stützen.\n"
             "3. Gegenargument (1 Satz): Stärkster Einwand gegen die These.\n"
             "4. Schlussrichtung (1 Satz): Wie wird der Essay enden/auflösen?\n\n"
-            "Antworte als JSON: {\"thesis\": \"...\", \"main_arguments\": [\"...\"], "
-            "\"counter_argument\": \"...\", \"conclusion_direction\": \"...\"}"
+            'Antworte als JSON: {"thesis": "...", "main_arguments": ["..."], '
+            '"counter_argument": "...", "conclusion_direction": "..."}'
         ),
         variables=["title", "description"],
     ),

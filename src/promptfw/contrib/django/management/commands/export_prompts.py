@@ -68,9 +68,7 @@ class Command(BaseCommand):
         else:
             self._export_directory(templates, Path(output_dir))
 
-        self.stdout.write(
-            self.style.SUCCESS(f"Exported {len(templates)} prompt template(s).")
-        )
+        self.stdout.write(self.style.SUCCESS(f"Exported {len(templates)} prompt template(s)."))
 
     def _template_to_dict(self, tpl: PromptTemplate) -> dict:
         """Convert a PromptTemplate to a serializable dict."""
