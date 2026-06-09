@@ -10,7 +10,7 @@ Befund #10: output_schema/response_format nur von TASK-Layer propagiert
 import pytest
 
 from promptfw.exceptions import LLMResponseError, TemplateRenderError
-from promptfw.schema import VALID_RESPONSE_FORMATS, PromptTemplate, RenderedPrompt, TemplateLayer
+from promptfw.schema import VALID_RESPONSE_FORMATS, PromptTemplate, TemplateLayer
 from promptfw.registry import TemplateRegistry
 from promptfw.renderer import PromptRenderer
 
@@ -18,6 +18,7 @@ from promptfw.renderer import PromptRenderer
 # ---------------------------------------------------------------------------
 # Befund #9 — LLMResponseError ist separater Exception-Typ
 # ---------------------------------------------------------------------------
+
 
 class TestLLMResponseError:
     def test_should_not_be_instance_of_template_render_error(self):
@@ -34,6 +35,7 @@ class TestLLMResponseError:
 
     def test_should_not_be_caught_by_template_render_error_handler(self):
         from promptfw.parsing import extract_json_strict
+
         caught_as_render_error = False
         caught_as_llm_error = False
         try:
@@ -50,6 +52,7 @@ class TestLLMResponseError:
 # Befund #10 — output_schema/response_format nur von TASK-Layer propagiert
 # ---------------------------------------------------------------------------
 
+
 class TestResponseFormatPropagation:
     def _make_renderer(self):
         return PromptRenderer()
@@ -58,11 +61,14 @@ class TestResponseFormatPropagation:
         renderer = self._make_renderer()
         templates = [
             PromptTemplate(
-                id="t.system.base", layer=TemplateLayer.SYSTEM,
-                template="You are an analyst.", cacheable=True,
+                id="t.system.base",
+                layer=TemplateLayer.SYSTEM,
+                template="You are an analyst.",
+                cacheable=True,
             ),
             PromptTemplate(
-                id="t.task.extract", layer=TemplateLayer.TASK,
+                id="t.task.extract",
+                layer=TemplateLayer.TASK,
                 template="Extract data from: {{ text }}",
                 variables=["text"],
                 response_format="json_object",
@@ -75,13 +81,15 @@ class TestResponseFormatPropagation:
         renderer = self._make_renderer()
         templates = [
             PromptTemplate(
-                id="t.system.base", layer=TemplateLayer.SYSTEM,
+                id="t.system.base",
+                layer=TemplateLayer.SYSTEM,
                 template="You are an analyst.",
                 cacheable=True,
                 response_format="json_object",  # should be ignored
             ),
             PromptTemplate(
-                id="t.task.plain", layer=TemplateLayer.TASK,
+                id="t.task.plain",
+                layer=TemplateLayer.TASK,
                 template="Do something.",
                 # no response_format
             ),
@@ -93,13 +101,15 @@ class TestResponseFormatPropagation:
         renderer = self._make_renderer()
         templates = [
             PromptTemplate(
-                id="t.format.roman", layer=TemplateLayer.FORMAT,
+                id="t.format.roman",
+                layer=TemplateLayer.FORMAT,
                 template="Format rules.",
                 cacheable=True,
                 response_format="json_schema",  # should be ignored
             ),
             PromptTemplate(
-                id="t.task.write", layer=TemplateLayer.TASK,
+                id="t.task.write",
+                layer=TemplateLayer.TASK,
                 template="Write something.",
             ),
         ]
@@ -111,7 +121,8 @@ class TestResponseFormatPropagation:
         schema = {"type": "object", "properties": {"name": {"type": "string"}}}
         templates = [
             PromptTemplate(
-                id="t.task.extract", layer=TemplateLayer.TASK,
+                id="t.task.extract",
+                layer=TemplateLayer.TASK,
                 template="Extract.",
                 output_schema=schema,
                 response_format="json_schema",
@@ -124,12 +135,14 @@ class TestResponseFormatPropagation:
         renderer = self._make_renderer()
         templates = [
             PromptTemplate(
-                id="t.task.first", layer=TemplateLayer.TASK,
+                id="t.task.first",
+                layer=TemplateLayer.TASK,
                 template="First.",
                 response_format="json_object",
             ),
             PromptTemplate(
-                id="t.task.second", layer=TemplateLayer.TASK,
+                id="t.task.second",
+                layer=TemplateLayer.TASK,
                 template="Second.",
                 response_format="text",
             ),
@@ -142,6 +155,7 @@ class TestResponseFormatPropagation:
 # Befund #5 — strict-Mode in TemplateRegistry
 # ---------------------------------------------------------------------------
 
+
 class TestRegistryStrictMode:
     def test_should_raise_on_missing_required_fields_in_strict_mode(self, tmp_path):
         bad_yaml = tmp_path / "bad.yaml"
@@ -151,9 +165,7 @@ class TestRegistryStrictMode:
 
     def test_should_raise_on_invalid_layer_in_strict_mode(self, tmp_path):
         bad_yaml = tmp_path / "bad_layer.yaml"
-        bad_yaml.write_text(
-            "id: test.task.bad\nlayer: nonexistent\ntemplate: Hello\n"
-        )
+        bad_yaml.write_text("id: test.task.bad\nlayer: nonexistent\ntemplate: Hello\n")
         with pytest.raises(ValueError, match="invalid layer"):
             TemplateRegistry.from_directory(tmp_path, strict=True)
 
@@ -174,9 +186,7 @@ class TestRegistryStrictMode:
 
     def test_should_load_valid_template_in_strict_mode(self, tmp_path):
         good_yaml = tmp_path / "good.yaml"
-        good_yaml.write_text(
-            "id: test.task.good\nlayer: task\ntemplate: Hello {{ name }}\n"
-        )
+        good_yaml.write_text("id: test.task.good\nlayer: task\ntemplate: Hello {{ name }}\n")
         registry = TemplateRegistry.from_directory(tmp_path, strict=True)
         assert len(registry) == 1
         assert registry.get("test.task.good").id == "test.task.good"
@@ -193,6 +203,7 @@ class TestRegistryStrictMode:
 # ---------------------------------------------------------------------------
 # Befund #6 — VALID_RESPONSE_FORMATS Konstante
 # ---------------------------------------------------------------------------
+
 
 class TestValidResponseFormats:
     def test_should_contain_json_object(self):

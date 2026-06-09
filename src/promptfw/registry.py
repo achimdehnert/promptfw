@@ -66,6 +66,7 @@ class TemplateRegistry:
         strict = getattr(self, "_strict", False)
         if yaml is None:
             import yaml as _yaml
+
             yaml = _yaml
         try:
             with open(yaml_file) as f:
@@ -192,6 +193,7 @@ class TemplateRegistry:
             logger.warning("reload() called but no templates_dir set")
             return
         import yaml
+
         self._templates.clear()
         for yaml_file in self._templates_dir.rglob("*.yaml"):
             self._load_yaml_file(yaml_file, yaml)

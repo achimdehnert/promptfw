@@ -92,13 +92,14 @@ class PromptRenderer:
         # FEW_SHOT always appended last regardless of registration order.
         _system_layers = (TemplateLayer.SYSTEM, TemplateLayer.FORMAT)
         _few_shot = TemplateLayer.FEW_SHOT
+        # Canonical render order: system block → user-context sub-layers (in
+        # USER_LAYERS order: CONTEXT → PROJECT → CHAPTER → SCENE → TASK) → few-shot.
+        # The full per-layer index is required — bucketing all USER_LAYERS to one
+        # key would leave the context sub-layers in registration order (stable sort).
+        _canonical_order = (*_system_layers, *USER_LAYERS, _few_shot)
         ordered = sorted(
             templates,
-            key=lambda t: (
-                0 if t.layer in _system_layers else
-                1 if t.layer in USER_LAYERS else
-                2  # FEW_SHOT
-            ),
+            key=lambda t: _canonical_order.index(t.layer),
         )
 
         for tmpl in ordered:
@@ -109,9 +110,7 @@ class PromptRenderer:
                     if user_text:
                         few_shot_messages.append({"role": "user", "content": user_text})
                     if assistant_text:
-                        few_shot_messages.append(
-                            {"role": "assistant", "content": assistant_text}
-                        )
+                        few_shot_messages.append({"role": "assistant", "content": assistant_text})
                 continue
 
             rendered = self.render_template(tmpl, context)
@@ -182,6 +181,7 @@ class PromptRenderer:
         """Rough token estimate — 1 token ≈ 4 chars. Use tiktoken for accuracy."""
         try:
             import tiktoken
+
             enc = tiktoken.get_encoding("cl100k_base")
             return len(enc.encode(text))
         except ImportError:

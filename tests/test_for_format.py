@@ -13,9 +13,7 @@ def _tmpl(
     text: str = "hello",
     fmt: str | None = None,
 ) -> PromptTemplate:
-    return PromptTemplate(
-        id=tid, layer=layer, template=text, format_type=fmt, tokens_estimate=0
-    )
+    return PromptTemplate(id=tid, layer=layer, template=text, format_type=fmt, tokens_estimate=0)
 
 
 class TestForFormat:

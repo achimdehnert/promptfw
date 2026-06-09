@@ -53,8 +53,7 @@ from promptfw.stack import PromptStack
 logger = logging.getLogger(__name__)
 
 _GENERIC_SYSTEM = (
-    "Du bist ein erfahrener Autor und Lektor. "
-    "Antworte praezise und kreativ auf Deutsch."
+    "Du bist ein erfahrener Autor und Lektor. Antworte praezise und kreativ auf Deutsch."
 )
 _GENERIC_USER = (
     "Erstelle die Planungsgrundlagen fuer folgendes Projekt:\n\n{context}\n\n"
@@ -111,7 +110,9 @@ class DBPromptResolver:
 
         logger.warning(
             "No DB config for slug=%r — using defaults (action_code=%s, prefix=%s)",
-            slug, self._default_action_code, self._default_template_prefix,
+            slug,
+            self._default_action_code,
+            self._default_template_prefix,
         )
         return {
             "action_code": self._default_action_code,
@@ -166,7 +167,8 @@ class DBPromptResolver:
         except Exception as exc:
             logger.warning(
                 "promptfw render failed for prefix=%r (%s) — using generic fallback",
-                prefix, exc,
+                prefix,
+                exc,
             )
 
         # 3. Generic fallback

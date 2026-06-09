@@ -1,7 +1,5 @@
 """Tests for promptfw lektorat templates and get_lektorat_stack."""
 
-import pytest
-
 from promptfw.schema import TemplateLayer
 from promptfw.stack import PromptStack
 from promptfw.lektorat import LEKTORAT_TEMPLATES, get_lektorat_stack
@@ -74,56 +72,77 @@ class TestGetLektoratStack:
 
     def test_should_render_extract_characters_task(self):
         stack = get_lektorat_stack()
-        rendered = stack.render("lektorat.task.extract_characters", {
-            "content": "Elias betrat die Schmiede. Maria wartete bereits auf ihn.",
-        })
+        rendered = stack.render(
+            "lektorat.task.extract_characters",
+            {
+                "content": "Elias betrat die Schmiede. Maria wartete bereits auf ihn.",
+            },
+        )
         assert "Elias" in rendered.user
         assert "JSON-Array" in rendered.user
 
     def test_should_render_extract_characters_with_optional_chapter_number(self):
         stack = get_lektorat_stack()
-        rendered = stack.render("lektorat.task.extract_characters", {
-            "content": "Elias betrat die Schmiede.",
-            "chapter_number": 3,
-        })
+        rendered = stack.render(
+            "lektorat.task.extract_characters",
+            {
+                "content": "Elias betrat die Schmiede.",
+                "chapter_number": 3,
+            },
+        )
         assert "3" in rendered.user
 
     def test_should_render_analyze_style_task(self):
         stack = get_lektorat_stack()
-        rendered = stack.render("lektorat.task.analyze_style", {
-            "text": "Er ging langsam durch die Gassen. Die Stille drückte auf ihn ein.",
-        })
+        rendered = stack.render(
+            "lektorat.task.analyze_style",
+            {
+                "text": "Er ging langsam durch die Gassen. Die Stille drückte auf ihn ein.",
+            },
+        )
         assert "Er ging langsam" in rendered.user
         assert "JSON" in rendered.user
 
     def test_should_render_find_repetitions_task(self):
         stack = get_lektorat_stack()
-        rendered = stack.render("lektorat.task.find_repetitions", {
-            "text": "Er lief. Er lief schnell. Er lief immer schneller.",
-        })
+        rendered = stack.render(
+            "lektorat.task.find_repetitions",
+            {
+                "text": "Er lief. Er lief schnell. Er lief immer schneller.",
+            },
+        )
         assert "Er lief" in rendered.user
 
     def test_should_render_find_repetitions_with_threshold(self):
         stack = get_lektorat_stack()
-        rendered = stack.render("lektorat.task.find_repetitions", {
-            "text": "Testtext.",
-            "threshold": 3,
-        })
+        rendered = stack.render(
+            "lektorat.task.find_repetitions",
+            {
+                "text": "Testtext.",
+                "threshold": 3,
+            },
+        )
         assert "3" in rendered.user
 
     def test_should_render_check_timeline_task(self):
         stack = get_lektorat_stack()
-        rendered = stack.render("lektorat.task.check_timeline", {
-            "text": "Am Montag passierte X. Am Dienstag war schon Y passiert.",
-        })
+        rendered = stack.render(
+            "lektorat.task.check_timeline",
+            {
+                "text": "Am Montag passierte X. Am Dienstag war schon Y passiert.",
+            },
+        )
         assert "Montag" in rendered.user
 
     def test_should_render_check_timeline_with_optional_known_events(self):
         stack = get_lektorat_stack()
-        rendered = stack.render("lektorat.task.check_timeline", {
-            "text": "Am Montag passierte X.",
-            "known_events": "Tag 1: Ankunft. Tag 2: Konflikt.",
-        })
+        rendered = stack.render(
+            "lektorat.task.check_timeline",
+            {
+                "text": "Am Montag passierte X.",
+                "known_events": "Tag 1: Ankunft. Tag 2: Konflikt.",
+            },
+        )
         assert "Ankunft" in rendered.user
 
     def test_should_render_system_analyst_into_system_prompt(self):

@@ -37,6 +37,7 @@ except ImportError:
 
 # --- Enums ---
 
+
 class HubChoices(models.TextChoices):
     WRITING = "writing-hub", _("Writing Hub")
     TRAVEL_BEAT = "travel-beat", _("Travel Beat / DriftTales")
@@ -271,6 +272,4 @@ class PromptTemplate(models.Model):
         if self.variables_schema and self.defaults:
             unknown = set(self.defaults.keys()) - set(self.variables_schema.keys())
             if unknown:
-                raise ValidationError(
-                    {"defaults": f"Keys not in variables_schema: {unknown}"}
-                )
+                raise ValidationError({"defaults": f"Keys not in variables_schema: {unknown}"})

@@ -19,6 +19,7 @@ from promptfw.stack import PromptStack
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _tmpl(tid: str, layer: TemplateLayer, text: str = "hello") -> PromptTemplate:
     return PromptTemplate(id=tid, layer=layer, template=text, tokens_estimate=0)
 
@@ -27,28 +28,33 @@ def _tmpl(tid: str, layer: TemplateLayer, text: str = "hello") -> PromptTemplate
 # Issue #7 — TemplateRegistry.get_or_fallback()
 # ---------------------------------------------------------------------------
 
+
 class TestGetOrFallback:
     def test_should_return_first_match(self):
         reg = TemplateRegistry()
         reg.register(_tmpl("writing.task.write_chapter", TemplateLayer.TASK))
         reg.register(_tmpl("writing.task.default", TemplateLayer.TASK))
 
-        t = reg.get_or_fallback([
-            "writing.task.write_chapter.roman",
-            "writing.task.write_chapter",
-            "writing.task.default",
-        ])
+        t = reg.get_or_fallback(
+            [
+                "writing.task.write_chapter.roman",
+                "writing.task.write_chapter",
+                "writing.task.default",
+            ]
+        )
         assert t.id == "writing.task.write_chapter"
 
     def test_should_skip_missing_and_use_fallback(self):
         reg = TemplateRegistry()
         reg.register(_tmpl("writing.task.default", TemplateLayer.TASK))
 
-        t = reg.get_or_fallback([
-            "writing.task.write_chapter.roman",
-            "writing.task.write_chapter",
-            "writing.task.default",
-        ])
+        t = reg.get_or_fallback(
+            [
+                "writing.task.write_chapter.roman",
+                "writing.task.write_chapter",
+                "writing.task.default",
+            ]
+        )
         assert t.id == "writing.task.default"
 
     def test_should_raise_when_all_missing(self):
@@ -73,6 +79,7 @@ class TestGetOrFallback:
 # Issue #9 — tokens_estimate auto-calculation
 # ---------------------------------------------------------------------------
 
+
 class TestTokensEstimate:
     def test_should_auto_calculate_when_zero_and_tiktoken_available(self):
         tmpl = PromptTemplate(
@@ -83,6 +90,7 @@ class TestTokensEstimate:
         )
         try:
             import tiktoken  # noqa: F401
+
             assert tmpl.tokens_estimate > 0
         except ImportError:
             assert tmpl.tokens_estimate == 0
@@ -109,6 +117,7 @@ class TestTokensEstimate:
 # ---------------------------------------------------------------------------
 # Issue #3 — PromptStack.render_with_fallback()
 # ---------------------------------------------------------------------------
+
 
 class TestRenderWithFallback:
     def test_should_use_first_matching_fallback(self):
@@ -141,6 +150,7 @@ class TestRenderWithFallback:
 # ---------------------------------------------------------------------------
 # Issue #2 — context_scope sub-layers
 # ---------------------------------------------------------------------------
+
 
 class TestContextSubLayers:
     def test_should_have_new_sub_layers_in_enum(self):

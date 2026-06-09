@@ -211,13 +211,9 @@ def extract_field(
         if name.lower() != target:
             continue
 
-        # Continuation: text between end of this header and start of next header.
+        # Continuation: text between end of this header and start of the next header.
         if idx + 1 < len(entries):
-            next_header_end = entries[idx + 1][0]
-            # next header's m.start() = next_header_end minus the header length;
-            # use m.start() stored separately for clean slicing.
-            # Re-find next header start by scanning back from next_header_end.
-            continuation_text = text[header_end:_header_start(entries, idx + 1, text)]
+            continuation_text = text[header_end : _header_start(entries, idx + 1, text)]
         else:
             continuation_text = text[header_end:]
 

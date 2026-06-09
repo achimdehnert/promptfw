@@ -1,6 +1,5 @@
 """Tests for promptfw planning templates and get_planning_stack."""
 
-import pytest
 from promptfw.planning import get_planning_stack, PLANNING_TEMPLATES
 from promptfw.schema import TemplateLayer
 
@@ -8,9 +7,7 @@ from promptfw.schema import TemplateLayer
 class TestPlanningTemplates:
     def test_all_formats_have_task_template(self):
         formats = {"roman", "nonfiction", "academic", "scientific", "essay"}
-        task_formats = {
-            t.format_type for t in PLANNING_TEMPLATES if t.layer == TemplateLayer.TASK
-        }
+        task_formats = {t.format_type for t in PLANNING_TEMPLATES if t.layer == TemplateLayer.TASK}
         assert formats == task_formats
 
     def test_all_formats_have_system_template(self):
@@ -53,6 +50,7 @@ class TestPlanningTemplates:
 class TestGetPlanningStack:
     def test_returns_promptstack(self):
         from promptfw.stack import PromptStack
+
         stack = get_planning_stack()
         assert isinstance(stack, PromptStack)
 
@@ -64,11 +62,14 @@ class TestGetPlanningStack:
 
     def test_render_roman_planning(self):
         stack = get_planning_stack()
-        rendered = stack.render("roman.task.planning", {
-            "title": "Der letzte Magier",
-            "genre": "Fantasy",
-            "description": "Ein junger Schmied entdeckt seine magischen Kräfte.",
-        })
+        rendered = stack.render(
+            "roman.task.planning",
+            {
+                "title": "Der letzte Magier",
+                "genre": "Fantasy",
+                "description": "Ein junger Schmied entdeckt seine magischen Kräfte.",
+            },
+        )
         assert "Der letzte Magier" in rendered.user
         assert "Fantasy" in rendered.user
 
@@ -87,41 +88,53 @@ class TestGetPlanningStack:
 
     def test_render_academic_planning(self):
         stack = get_planning_stack()
-        rendered = stack.render("academic.task.planning", {
-            "title": "KI in der Medizin",
-            "field_of_study": "Medizininformatik",
-            "description": "Auswirkungen von LLMs auf die Diagnosestellung.",
-            "citation_style": "APA",
-        })
+        rendered = stack.render(
+            "academic.task.planning",
+            {
+                "title": "KI in der Medizin",
+                "field_of_study": "Medizininformatik",
+                "description": "Auswirkungen von LLMs auf die Diagnosestellung.",
+                "citation_style": "APA",
+            },
+        )
         assert "KI in der Medizin" in rendered.user
         assert "Medizininformatik" in rendered.user
         assert "APA" in rendered.user
 
     def test_render_scientific_planning(self):
         stack = get_planning_stack()
-        rendered = stack.render("scientific.task.planning", {
-            "title": "Wirksamkeit von X",
-            "field_of_study": "Pharmakologie",
-            "description": "Klinische Studie zur Wirksamkeit.",
-            "citation_style": "Vancouver",
-        })
+        rendered = stack.render(
+            "scientific.task.planning",
+            {
+                "title": "Wirksamkeit von X",
+                "field_of_study": "Pharmakologie",
+                "description": "Klinische Studie zur Wirksamkeit.",
+                "citation_style": "Vancouver",
+            },
+        )
         assert "Wirksamkeit von X" in rendered.user
 
     def test_render_essay_planning(self):
         stack = get_planning_stack()
-        rendered = stack.render("essay.task.planning", {
-            "title": "Über die Grenzen der KI",
-            "description": "Ein Essay über ethische Grenzen.",
-        })
+        rendered = stack.render(
+            "essay.task.planning",
+            {
+                "title": "Über die Grenzen der KI",
+                "description": "Ein Essay über ethische Grenzen.",
+            },
+        )
         assert "Über die Grenzen der KI" in rendered.user
 
     def test_render_nonfiction_planning(self):
         stack = get_planning_stack()
-        rendered = stack.render("nonfiction.task.planning", {
-            "title": "Produktivität ohne Burnout",
-            "description": "Praktische Strategien für nachhaltige Leistung.",
-            "field_of_study": "Psychologie",
-        })
+        rendered = stack.render(
+            "nonfiction.task.planning",
+            {
+                "title": "Produktivität ohne Burnout",
+                "description": "Praktische Strategien für nachhaltige Leistung.",
+                "field_of_study": "Psychologie",
+            },
+        )
         assert "Produktivität ohne Burnout" in rendered.user
 
     def test_multiple_stacks_are_independent(self):
