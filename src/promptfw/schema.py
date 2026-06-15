@@ -80,3 +80,14 @@ class RenderedPrompt:
     few_shot_messages: list[dict[str, str]] = field(default_factory=list)
     output_schema: dict[str, Any] | None = None
     response_format: Literal["json_object", "json_schema", "text"] | None = None
+
+    def to_messages(self) -> list[dict[str, Any]]:
+        """Convert to an OpenAI-style messages list."""
+        messages: list[dict[str, Any]] = []
+        if self.system:
+            messages.append({"role": "system", "content": self.system})
+        if self.few_shot_messages:
+            messages.extend(self.few_shot_messages)
+        if self.user:
+            messages.append({"role": "user", "content": self.user})
+        return messages
