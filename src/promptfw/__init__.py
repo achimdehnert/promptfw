@@ -1,10 +1,34 @@
-"""
-promptfw — Prompt Template Framework
+"""promptfw — Prompt Template Framework.
 
-5-layer Jinja2 template engine for LLM applications.
+5-layer Jinja2 template engine for LLM applications: a registry of
+``PromptTemplate`` objects (SYSTEM / FORMAT / CONTEXT* / TASK / FEW_SHOT layers)
+that renders into system + user prompts or directly into OpenAI/LiteLLM message
+lists. The public API is re-exported here; the implementation lives in submodules:
+
+- ``promptfw.schema``           — ``PromptTemplate``, ``RenderedPrompt``, ``TemplateLayer``, ``USER_LAYERS``
+- ``promptfw.registry``         — ``TemplateRegistry`` (wildcard lookup, version pinning, fallback chains)
+- ``promptfw.renderer``         — ``PromptRenderer`` (Jinja2 rendering engine)
+- ``promptfw.stack``            — ``PromptStack`` (high-level facade: register, render, render_to_messages)
+- ``promptfw.parsing``          — ``extract_json``/``extract_field`` LLM-response parsers
+- ``promptfw.frontmatter``      — render Markdown files/strings with YAML frontmatter
+- ``promptfw.planning``         — ``get_planning_stack()`` + ``PLANNING_TEMPLATES``
+- ``promptfw.writing``          — writing/academic/scientific stacks
+- ``promptfw.lektorat``         — ``get_lektorat_stack()`` + ``LEKTORAT_TEMPLATES``
+- ``promptfw.concept_analysis`` — ``get_concept_analysis_stack()`` + templates
+- ``promptfw.db_resolver``      — ``DBPromptResolver`` (DB-backed template resolution)
+- ``promptfw.django_registry``  — ``DjangoTemplateRegistry`` ORM adapter
+- ``promptfw.contrib.django``   — optional Django app (models, admin, management commands)
+- ``promptfw.exceptions``       — ``TemplateNotFoundError``, ``TemplateRenderError``, ``LLMResponseError``
+
+``__version__`` is resolved from the installed package metadata.
 """
 
-__version__ = "0.7.0"
+from importlib.metadata import PackageNotFoundError, version
+
+try:
+    __version__ = version("iil-promptfw")
+except PackageNotFoundError:  # source checkout without an install
+    __version__ = "0.0.0.dev0"
 
 from promptfw.exceptions import LLMResponseError, TemplateNotFoundError, TemplateRenderError
 from promptfw.schema import (
