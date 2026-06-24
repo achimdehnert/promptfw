@@ -46,6 +46,7 @@ dev = [
     "pytest-asyncio>=0.23",
     "pytest-mock>=3.12",
     "tiktoken>=0.6",
+    "django>=4.2",
 ]
 testing = [
     "pytest>=8.0",
