@@ -38,13 +38,13 @@ rendered = stack.render("story.task.write", {
 # rendered.user    →  user prompt   (CONTEXT* + TASK layers)
 ```
 
-## 5-Layer Stack
+## Layer Stack (5 core layers + 3 context sub-layers)
 
 ```
 SYSTEM           → Role & base behaviour      (stable, cacheable)
 FORMAT           → Format-specific rules       (stable, cacheable)
 CONTEXT          → Generic runtime context     (dynamic)
-CONTEXT_PROJECT  → Project-level context       (dynamic, v0.8.1)
+CONTEXT_PROJECT  → Project-level context       (dynamic, v0.5.0)
 CONTEXT_CHAPTER  → Chapter-level context       (dynamic, v0.5.0)
 CONTEXT_SCENE    → Scene-level context         (dynamic, v0.5.0)
 TASK             → Concrete task               (dynamic)

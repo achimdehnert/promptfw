@@ -5,6 +5,26 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [Unreleased]
+
+### Added
+- `RenderedPrompt.to_messages()` — convert a rendered prompt to an OpenAI-style
+  message list (`fc9ddd3`).
+- ADR index `docs/adr/README.md`; note that `ADR-146` is a platform-level ADR.
+- `make format` target; `make lint` now mirrors CI (`ruff format --check`).
+
+### Changed
+- `__version__` is now derived from installed package metadata
+  (`importlib.metadata.version`) instead of a hardcoded string that drifted (#16).
+- `publish.yml` builds/tests on Python 3.12 (was 3.11) to match `requires-python >=3.12`.
+- Docs: `catalog-info.yaml` package-name `promptfw` → `iil-promptfw`, "4-layer" → "5-layer";
+  README context-sub-layer version tag `v0.8.1` → `v0.5.0`; ADR-003 status → Accepted.
+
+### Fixed
+- Publish workflow now actually gates the release on the test job (`needs: test`, #17).
+
+---
+
 ## [0.8.1] — 2026-04-23
 
 ### Fixed
