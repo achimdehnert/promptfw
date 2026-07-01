@@ -1,6 +1,6 @@
 # promptfw — Developer Makefile
 
-.PHONY: install test test-v lint clean help
+.PHONY: install test test-v lint format clean help
 
 PYTHON := python3
 PIP    := pip
@@ -10,7 +10,8 @@ help:
 	@echo "  install   — pip install -e '.[dev]'"
 	@echo "  test      — pytest (quiet)"
 	@echo "  test-v    — pytest (verbose)"
-	@echo "  lint      — ruff check src/ tests/"
+	@echo "  lint      — ruff check + ruff format --check (mirrors CI)"
+	@echo "  format    — ruff format (auto-fix)"
 	@echo "  clean     — remove __pycache__ + .pytest_cache"
 
 install:
@@ -24,6 +25,10 @@ test-v:
 
 lint:
 	ruff check src/ tests/
+	ruff format --check .
+
+format:
+	ruff format .
 
 clean:
 	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true

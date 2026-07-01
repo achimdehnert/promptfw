@@ -2,7 +2,7 @@
 
 | Metadata | Value |
 |----------|-------|
-| **Status** | Proposed |
+| **Status** | Accepted (implemented — see `parsing.py`, `writing.py`, `lektorat.py`, `concept_analysis.py`) |
 | **Date** | 2026-03-01 |
 | **Author** | Achim Dehnert |
 | **Reviewers** | — |
