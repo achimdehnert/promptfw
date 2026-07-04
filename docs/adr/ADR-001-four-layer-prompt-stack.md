@@ -1,3 +1,8 @@
+---
+status: accepted
+date: 2026-03-01
+---
+
 # ADR-001: Five-Layer Prompt Stack Architecture
 
 | Metadata | Value |
