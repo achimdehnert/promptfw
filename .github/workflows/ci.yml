@@ -18,5 +18,5 @@ jobs:
     uses: iilgmbh/shared-ci/.github/workflows/_ci-pypi.yml@v1.0.8
     with:
       python_versions: '["3.12"]'
-      install_extra: 'dev,django'
+      install_extra: 'dev'
       test_path: 'tests/'
