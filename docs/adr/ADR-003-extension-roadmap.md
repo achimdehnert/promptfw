@@ -1,3 +1,8 @@
+---
+status: accepted
+date: 2026-03-01
+---
+
 # ADR-003: Erweiterungsroadmap — writing, lektorat, parsing, output_schema
 
 | Metadata | Value |

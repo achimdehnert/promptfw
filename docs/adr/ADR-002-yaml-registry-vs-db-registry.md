@@ -1,3 +1,8 @@
+---
+status: accepted
+date: 2026-03-01
+---
+
 # ADR-002: YAML File Registry als primärer Template-Storage
 
 | Metadata | Value |
