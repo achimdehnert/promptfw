@@ -76,3 +76,26 @@ asyncio_mode = "auto"
 [tool.ruff]
 line-length = 100
 target-version = "py312"
+
+# Freshness-Deklaration (platform:KONZ-018 W1-3, Pilot — generalisiert das
+# produktive aifw-Muster aus install-iil-packages). Der generische Probe-Step
+# in der Consumer-CI liest diese Sektion (Fetch von origin/main) und prüft:
+# ist iil-promptfw >= freshness_min_version installiert, MUSS das importierte
+# Modul jedes Symbol exportieren — sonst ist der Tool-Cache-Code STALE.
+# Pflege-Regel (konservativ, R3): nur stabile Top-Level-API listen; ein neues
+# Symbol erst aufnehmen, wenn das Release, das es einführt, publiziert ist —
+# dann freshness_min_version auf dieses Release anheben.
+[tool.iil-fleet]
+freshness_min_version = "0.8"
+freshness_symbols = [
+    "PromptStack",
+    "PromptTemplate",
+    "RenderedPrompt",
+    "TemplateLayer",
+    "TemplateRegistry",
+    "PromptRenderer",
+    "TemplateNotFoundError",
+    "TemplateRenderError",
+    "extract_json",
+    "extract_field",
+]
